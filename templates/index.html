@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}
+Dashboard | HealthGuard AI
+{% endblock %}
+
+{% block content %}
+<section class="p-5 bg-light rounded-3 mb-5">
+    <h1 class="display-5 fw-bold">
+        HealthGuard AI
+    </h1>
+
+    <p class="lead">
+        AI-assisted medical-device cybersecurity risk assessment.
+    </p>
+
+    <p>
+        Document device security controls, calculate a structured
+        risk score, and generate prioritized recommendations.
+    </p>
+
+    <a
+        class="btn btn-primary btn-lg"
+        href="{{ url_for('assessment') }}"
+    >
+        Start Assessment
+    </a>
+</section>
+
+<div class="row g-3 mb-5">
+    <div class="col-md-3">
+        <div class="card dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">
+                    Total Assessments
+                </p>
+
+                <h2>
+                    {{ summary["total"] or 0 }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">
+                    Critical Risk
+                </p>
+
+                <h2>
+                    {{ summary["critical"] or 0 }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">
+                    High Risk
+                </p>
+
+                <h2>
+                    {{ summary["high"] or 0 }}
+                </h2>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card dashboard-card h-100">
+            <div class="card-body">
+                <p class="text-muted mb-1">
+                    Average Score
+                </p>
+
+                <h2>
+                    {{ summary["average_score"] or 0 }}
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>
+        Recent Assessments
+    </h2>
+
+    <a href="{{ url_for('history') }}">
+        View all
+    </a>
+</div>
+
+{% if recent %}
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead>
+        <tr>
+            <th>Device</th>
+            <th>Manufacturer</th>
+            <th>Score</th>
+            <th>Risk</th>
+            <th>Date</th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for item in recent %}
+        <tr>
+            <td>
+                {{ item["device_name"] }}
+            </td>
+
+            <td>
+                {{ item["manufacturer"] or "Not provided" }}
+            </td>
+
+            <td>
+                {{ item["risk_score"] }}/100
+            </td>
+
+            <td>
+                <span class="badge risk-{{ item['risk_level']|lower }}">
+                    {{ item["risk_level"] }}
+                </span>
+            </td>
+
+            <td>
+                {{ item["created_at"] }}
+            </td>
+
+            <td>
+                <a
+                    class="btn btn-sm btn-outline-primary"
+                    href="{{ url_for(
+                        'view_result',
+                        assessment_id=item['id']
+                    ) }}"
+                >
+                    View
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-secondary">
+    No assessments have been saved yet.
+</div>
+{% endif %}
+{% endblock %}

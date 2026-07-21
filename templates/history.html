@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}
+Assessment History | HealthGuard AI
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        Assessment History
+    </h1>
+
+    <a
+        class="btn btn-primary"
+        href="{{ url_for('assessment') }}"
+    >
+        New Assessment
+    </a>
+</div>
+
+{% if assessments %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover align-middle">
+        <thead>
+        <tr>
+            <th>Device</th>
+            <th>Type</th>
+            <th>Manufacturer</th>
+            <th>Score</th>
+            <th>Risk</th>
+            <th>Date</th>
+            <th></th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for item in assessments %}
+        <tr>
+            <td>
+                <strong>
+                    {{ item["device_name"] }}
+                </strong>
+
+                {% if item["model"] %}
+                <div class="small text-muted">
+                    {{ item["model"] }}
+                </div>
+                {% endif %}
+            </td>
+
+            <td>
+                {{ item["device_type"] }}
+            </td>
+
+            <td>
+                {{ item["manufacturer"] or "Not provided" }}
+            </td>
+
+            <td>
+                {{ item["risk_score"] }}/100
+            </td>
+
+            <td>
+                <span class="badge risk-{{ item['risk_level']|lower }}">
+                    {{ item["risk_level"] }}
+                </span>
+            </td>
+
+            <td>
+                {{ item["created_at"] }}
+            </td>
+
+            <td>
+                <a
+                    class="btn btn-sm btn-outline-primary"
+                    href="{{ url_for(
+                        'view_result',
+                        assessment_id=item['id']
+                    ) }}"
+                >
+                    View
+                </a>
+            </td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-secondary">
+    No assessment records were found.
+</div>
+{% endif %}
+{% endblock %}

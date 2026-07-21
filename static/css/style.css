@@ -1,0 +1,43 @@
+body {
+    background-color: #f7f8fa;
+}
+
+.card {
+    border: 0;
+    box-shadow: 0 0.125rem 0.4rem rgba(0, 0, 0, 0.08);
+}
+
+footer {
+    background-color: white;
+}
+.risk-low {
+    background-color: #198754;
+}
+
+.risk-medium {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.risk-high {
+    background-color: #fd7e14;
+}
+
+.risk-critical {
+    background-color: #dc3545;
+}
+
+.progress-bar {
+    background-color: #495057;
+}
+.dashboard-card {
+    border-left: 4px solid #495057;
+}
+.ai-output {
+    white-space: pre-wrap;
+    line-height: 1.7;
+}
+.ai-output {
+    white-space: pre-wrap;
+    line-height: 1.6;
+}

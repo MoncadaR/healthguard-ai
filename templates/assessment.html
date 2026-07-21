@@ -1,0 +1,330 @@
+{% extends "base.html" %}
+
+{% block title %}
+New Assessment | HealthGuard AI
+{% endblock %}
+
+{% macro checkbox(name, label) %}
+<div class="form-check mb-3">
+    <input
+        class="form-check-input"
+        type="checkbox"
+        name="{{ name }}"
+        id="{{ name }}"
+        {% if form_data and form_data.get(name) %}checked{% endif %}
+    >
+
+    <label
+        class="form-check-label"
+        for="{{ name }}"
+    >
+        {{ label }}
+    </label>
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="mb-4">
+    <h1>New Medical-Device Assessment</h1>
+
+    <p class="text-muted">
+        Use fictional or non-sensitive information only. Do not enter
+        patient names, medical-record numbers, passwords, API keys,
+        or confidential hospital information.
+    </p>
+</div>
+
+{% if error %}
+<div class="alert alert-danger">
+    {{ error }}
+</div>
+{% endif %}
+
+<form method="post">
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>1. Device Information</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label
+                        class="form-label"
+                        for="device_name"
+                    >
+                        Device Name *
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="device_name"
+                        name="device_name"
+                        maxlength="200"
+                        required
+                        value="{{ form_data.get('device_name', '') if form_data else '' }}"
+                    >
+                </div>
+
+                <div class="col-md-6">
+                    <label
+                        class="form-label"
+                        for="device_type"
+                    >
+                        Device Type *
+                    </label>
+
+                    <select
+                        class="form-select"
+                        id="device_type"
+                        name="device_type"
+                        required
+                    >
+                        <option value="">Select one</option>
+                        <option value="Laboratory Analyzer">
+                            Laboratory Analyzer
+                        </option>
+                        <option value="Infusion Pump">
+                            Infusion Pump
+                        </option>
+                        <option value="Patient Monitor">
+                            Patient Monitor
+                        </option>
+                        <option value="Imaging System">
+                            Imaging System
+                        </option>
+                        <option value="Ventilator">
+                            Ventilator
+                        </option>
+                        <option value="Medical Server">
+                            Medical Server
+                        </option>
+                        <option value="Clinical Workstation">
+                            Clinical Workstation
+                        </option>
+                        <option value="Other">
+                            Other
+                        </option>
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label
+                        class="form-label"
+                        for="manufacturer"
+                    >
+                        Manufacturer
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="manufacturer"
+                        name="manufacturer"
+                        maxlength="200"
+                    >
+                </div>
+
+                <div class="col-md-6">
+                    <label
+                        class="form-label"
+                        for="model"
+                    >
+                        Model
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="model"
+                        name="model"
+                        maxlength="200"
+                    >
+                </div>
+
+                <div class="col-md-6">
+                    <label
+                        class="form-label"
+                        for="department"
+                    >
+                        Department
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="department"
+                        name="department"
+                        placeholder="Laboratory, radiology, ICU..."
+                    >
+                </div>
+
+                <div class="col-md-6">
+                    <label
+                        class="form-label"
+                        for="operating_system"
+                    >
+                        Operating System
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="operating_system"
+                        name="operating_system"
+                        placeholder="Windows, Linux, embedded OS..."
+                    >
+                </div>
+
+                <div class="col-md-6">
+                    <label
+                        class="form-label"
+                        for="support_status"
+                    >
+                        Software Support Status *
+                    </label>
+
+                    <select
+                        class="form-select"
+                        id="support_status"
+                        name="support_status"
+                        required
+                    >
+                        <option value="unknown">
+                            Unknown
+                        </option>
+
+                        <option value="supported">
+                            Vendor Supported
+                        </option>
+
+                        <option value="unsupported">
+                            Unsupported
+                        </option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>2. Connectivity and Data</strong>
+        </div>
+
+        <div class="card-body">
+            {{ checkbox(
+                "network_connected",
+                "The device is connected to a network"
+            ) }}
+
+            {{ checkbox(
+                "internet_access",
+                "The device has direct or indirect internet access"
+            ) }}
+
+            {{ checkbox(
+                "wireless_enabled",
+                "Wireless connectivity is enabled"
+            ) }}
+
+            {{ checkbox(
+                "stores_phi",
+                "The device stores or processes patient-identifiable information"
+            ) }}
+
+            {{ checkbox(
+                "encryption_transit",
+                "Network communications are encrypted"
+            ) }}
+
+            {{ checkbox(
+                "encryption_at_rest",
+                "Stored information is encrypted"
+            ) }}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>3. Identity and Logging</strong>
+        </div>
+
+        <div class="card-body">
+            {{ checkbox(
+                "unique_accounts",
+                "The device supports unique user accounts"
+            ) }}
+
+            {{ checkbox(
+                "default_password_changed",
+                "Default passwords have been changed"
+            ) }}
+
+            {{ checkbox(
+                "audit_logging",
+                "Security audit logging is enabled"
+            ) }}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>4. Network and Remote Access</strong>
+        </div>
+
+        <div class="card-body">
+            {{ checkbox(
+                "network_segmented",
+                "The device is in a dedicated medical-device network segment"
+            ) }}
+
+            {{ checkbox(
+                "vendor_remote_access",
+                "Vendor remote access is enabled"
+            ) }}
+
+            {{ checkbox(
+                "remote_access_mfa",
+                "Vendor remote access uses multifactor authentication"
+            ) }}
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <strong>5. Maintenance and Recovery</strong>
+        </div>
+
+        <div class="card-body">
+            {{ checkbox(
+                "patch_process",
+                "A documented security patch process exists"
+            ) }}
+
+            {{ checkbox(
+                "antivirus_supported",
+                "Endpoint protection is supported"
+            ) }}
+
+            {{ checkbox(
+                "backups_available",
+                "Backup or recovery procedures exist"
+            ) }}
+
+            {{ checkbox(
+                "end_of_life",
+                "The device is end of life"
+            ) }}
+        </div>
+    </div>
+
+    <div class="alert alert-warning">
+        This application is an educational prototype and does not
+        determine HIPAA compliance or clinical safety.
+    </div>
+
+    <button
+        class="btn btn-primary btn-lg"
+        type="submit"
+    >
+        Calculate Risk
+    </button>
+</form>
+{% endblock %}
