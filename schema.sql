@@ -10,6 +10,9 @@ CREATE TABLE assessments (
     department TEXT,
     operating_system TEXT,
     support_status TEXT NOT NULL,
+    cve_search_term TEXT,
+    cve_results TEXT NOT NULL DEFAULT '[]',
+    cve_lookup_error TEXT,
 
     network_connected INTEGER NOT NULL DEFAULT 0,
     internet_access INTEGER NOT NULL DEFAULT 0,

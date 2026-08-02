@@ -118,6 +118,97 @@ Assessment Results | HealthGuard AI
         {% endif %}
     </div>
 </div>
+
+<div class="card mt-4">
+    <div class="card-header d-flex justify-content-between">
+        <strong>Potentially Relevant CVEs</strong>
+
+        {% if assessment["cve_search_term"] %}
+        <span class="text-muted">
+            Search: {{ assessment["cve_search_term"] }}
+        </span>
+        {% endif %}
+    </div>
+
+    <div class="card-body">
+        <div class="alert alert-warning">
+            Keyword matches do not confirm that this device or
+            software version is vulnerable. Verify the product,
+            version, configuration, and affected CPE information.
+        </div>
+
+        {% if assessment["cve_lookup_error"] %}
+        <div class="alert alert-secondary">
+            NVD lookup unavailable:
+            {{ assessment["cve_lookup_error"] }}
+        </div>
+
+        {% elif cve_results %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                <tr>
+                    <th>CVE</th>
+                    <th>CVSS</th>
+                    <th>Severity</th>
+                    <th>Description</th>
+                    <th></th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for cve in cve_results %}
+                <tr>
+                    <td>
+                        <strong>{{ cve["cve_id"] }}</strong>
+                    </td>
+
+                    <td>
+                        {{ cve["cvss_score"] if cve["cvss_score"] is not none else "N/A" }}
+                    </td>
+
+                    <td>
+                        {{ cve["severity"] }}
+                    </td>
+
+                    <td>
+                        {{ cve["description"][:240] }}
+
+                        {% if cve["description"]|length > 240 %}
+                            ...
+                        {% endif %}
+                    </td>
+
+                    <td>
+                        <a
+                            class="btn btn-sm btn-outline-primary"
+                            href="{{ cve['source_url'] }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            NVD
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% elif assessment["cve_search_term"] %}
+        <p class="mb-0">
+            No CVEs were returned for the supplied keyword.
+        </p>
+
+        {% else %}
+        <p class="mb-0">
+            No CVE search term was supplied.
+        </p>
+        {% endif %}
+    </div>
+</div>
+
+
     <div class="card mt-4">
         <div class="card-header">
             <strong>

@@ -218,6 +218,55 @@
         </p>
         {% endif %}
     </section>
+<section class="mb-4">
+    <h3>Potentially Relevant CVEs</h3>
+
+    <p>
+        Search term:
+        {{ assessment["cve_search_term"] or "Not supplied" }}
+    </p>
+
+    <p>
+        These are keyword-based candidate results. They do not
+        confirm product or version applicability.
+    </p>
+
+    {% if cve_results %}
+    <table class="table table-bordered">
+        <thead>
+        <tr>
+            <th>CVE</th>
+            <th>CVSS</th>
+            <th>Severity</th>
+            <th>Description</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        {% for cve in cve_results %}
+        <tr>
+            <td>{{ cve["cve_id"] }}</td>
+            <td>
+                {{ cve["cvss_score"] if cve["cvss_score"] is not none else "N/A" }}
+            </td>
+            <td>{{ cve["severity"] }}</td>
+            <td>{{ cve["description"] }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    {% elif assessment["cve_lookup_error"] %}
+    <p>
+        NVD lookup unavailable:
+        {{ assessment["cve_lookup_error"] }}
+    </p>
+
+    {% else %}
+    <p>No candidate CVEs were stored.</p>
+    {% endif %}
+</section>
+
     <section class="mb-4">
     <h3>
         AI-Assisted Security Analysis

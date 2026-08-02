@@ -14,6 +14,7 @@ from flask import (
 from dotenv import load_dotenv
 from ai_service import generate_ai_analysis
 from database import get_db, init_app, init_db
+from nvd_service import NVDServiceError, search_cves
 from risk_engine import calculate_risk
 
 load_dotenv()
@@ -62,6 +63,21 @@ def checkbox_value(field_name: str) -> int:
 
     return 1 if request.form.get(field_name) == "on" else 0
 
+def clean_text(
+    field_name: str,
+    maximum_length: int = 200,
+) -> str:
+    """
+    Read a text field, remove extra spaces,
+    and limit its maximum length.
+    """
+
+    value = request.form.get(
+        field_name,
+        "",
+    ).strip()
+
+    return value[:maximum_length]
 
 def serialize_list(items: list[str]) -> str:
     """Convert a Python list into JSON text for SQLite."""
@@ -86,6 +102,26 @@ def deserialize_list(value: str | None) -> list[str]:
 
     return []
 
+def deserialize_json_list(value: str | None) -> list[dict]:
+    """Convert stored JSON text into a list of dictionaries."""
+
+    if not value:
+        return []
+
+    try:
+        result = json.loads(value)
+
+        if isinstance(result, list):
+            return [
+                item
+                for item in result
+                if isinstance(item, dict)
+            ]
+
+    except json.JSONDecodeError:
+        pass
+
+    return []
 
 @app.route("/")
 def index():
@@ -174,6 +210,10 @@ def assessment():
             "support_status",
             "unknown",
         ).strip(),
+            "cve_search_term": clean_text(
+        "cve_search_term",
+        maximum_length=150,
+),
     }
 
     for field in BOOLEAN_FIELDS:
@@ -205,6 +245,29 @@ def assessment():
         )
 
     result = calculate_risk(device_data)
+
+    cve_records = []
+    cve_results = []
+    cve_lookup_error = None
+
+    if device_data["cve_search_term"]:
+        try:
+            cve_records = search_cves(
+                device_data["cve_search_term"]
+            )
+
+            cve_results = [
+                record.to_dict()
+                for record in cve_records
+            ]
+
+        except NVDServiceError as exception:
+            app.logger.warning(
+                "NVD lookup failed: %s",
+                exception,
+            )
+
+            cve_lookup_error = str(exception)
 
     ai_analysis = None
     ai_error = None
@@ -239,6 +302,9 @@ def assessment():
             department,
             operating_system,
             support_status,
+            cve_search_term,
+            cve_results,
+            cve_lookup_error,
 
             network_connected,
             internet_access,
@@ -270,7 +336,7 @@ def assessment():
             ai_analysis
         )
         VALUES (
-            ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
             ?, ?, ?,
             ?, ?, ?,
             ?, ?, ?,
@@ -288,6 +354,9 @@ def assessment():
             device_data["department"],
             device_data["operating_system"],
             device_data["support_status"],
+            device_data["cve_search_term"],
+            json.dumps(cve_results),
+            cve_lookup_error,
 
             device_data["network_connected"],
             device_data["internet_access"],
@@ -360,6 +429,9 @@ def view_result(assessment_id: int):
         positive_controls=deserialize_list(
             assessment_record["positive_controls"]
         ),
+        cve_results=deserialize_json_list(
+            assessment_record["cve_results"]
+        ),
     )
 
 
@@ -408,6 +480,9 @@ def report(assessment_id: int):
         ),
         positive_controls=deserialize_list(
             assessment_record["positive_controls"]
+        ),
+        cve_results=deserialize_json_list(
+         assessment_record["cve_results"]
         ),
     )
 

@@ -175,6 +175,31 @@ New Assessment | HealthGuard AI
                 <div class="col-md-6">
                     <label
                         class="form-label"
+                        for="cve_search_term"
+                    >
+                        CVE Search Term
+                    </label>
+
+                    <input
+                        class="form-control"
+                        id="cve_search_term"
+                        name="cve_search_term"
+                        maxlength="150"
+                        placeholder="Example: Windows 7 or OpenSSL 3.0"
+                        value="{{ form_data.get('cve_search_term', '') if form_data else '' }}"
+                    >
+
+                    <div class="form-text">
+                        Enter a product, operating system, or software phrase.
+                        Results are potential matches and must be verified.
+                    </div>
+                </div>
+
+
+
+                <div class="col-md-6">
+                    <label
+                        class="form-label"
                         for="support_status"
                     >
                         Software Support Status *
