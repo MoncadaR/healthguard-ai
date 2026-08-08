@@ -377,6 +377,18 @@ flowchart TB
     ORCH --> DASH
     ORCH --> REP
 ```
+### Architecture Design
+
+HealthGuard AI separates deterministic security logic from external threat intelligence and generative AI.
+
+The Flask application orchestrates the workflow while preserving clear responsibility boundaries:
+
+1. **Presentation Layer** – captures assessment data and displays results.
+2. **Application Layer** – validates input and coordinates the workflow.
+3. **Security Analysis Layer** – calculates deterministic risk and maps ATT&CK techniques.
+4. **Threat Intelligence Layer** – enriches assessments using NVD and CISA KEV.
+5. **AI Layer** – generates explanatory analysis without modifying the numerical score.
+6. **Data Layer** – stores assessment history and generated results in SQLite.
 
 # Technology Stack
 
@@ -400,51 +412,145 @@ flowchart TB
 
 # Security Intelligence Workflow
 
-```text
-┌─────────────────────────┐
-│    Device Assessment    │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ Deterministic Risk      │
-│ Calculation             │
-└────────────┬────────────┘
-             │
-             ├───────────────► MITRE ATT&CK Mapping
-             │
-             ▼
-┌─────────────────────────┐
-│ NVD CVE Search          │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ Candidate CVEs          │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ CISA KEV Enrichment     │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ Exploitation Context    │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ OpenAI Analysis         │
-└────────────┬────────────┘
-             │
-             ▼
-┌─────────────────────────┐
-│ Security Report         │
-└─────────────────────────┘
+The security intelligence pipeline enriches the deterministic assessment with vulnerability, exploitation, and adversary-technique context before the final report is generated.
+
+```mermaid
+flowchart TD
+
+    START([Assessment Submitted])
+
+    VALIDATE[Validate Device & Security Data]
+
+    RISK[Calculate Deterministic Risk Score]
+
+    FINDINGS[Generate Security Findings & Recommendations]
+
+    MITRE[Map Security Conditions to MITRE ATT&CK]
+
+    SEARCH{CVE Search Term Provided?}
+
+    NVD[Query NIST NVD API]
+
+    CVES[Retrieve Candidate CVEs]
+
+    FOUND{Candidate CVEs Found?}
+
+    KEV[Compare CVEs Against CISA KEV]
+
+    EXPLOITED{KEV Match?}
+
+    KEVYES[Add Known Exploitation Context]
+
+    KEVNO[Record No Current KEV Match]
+
+    CONTEXT[Build Structured Security Context]
+
+    AI{OpenAI Available?}
+
+    ANALYSIS[Generate AI-Assisted Security Analysis]
+
+    FALLBACK[Continue With Deterministic Analysis]
+
+    STORE[(Store Assessment in SQLite)]
+
+    RESULT[Display Assessment Results]
+
+    REPORT[Generate Printable Security Report]
+
+    START --> VALIDATE
+    VALIDATE --> RISK
+    RISK --> FINDINGS
+
+    FINDINGS --> MITRE
+    FINDINGS --> SEARCH
+
+    SEARCH -->|Yes| NVD
+    SEARCH -->|No| CONTEXT
+
+    NVD --> CVES
+    CVES --> FOUND
+
+    FOUND -->|Yes| KEV
+    FOUND -->|No| CONTEXT
+
+    KEV --> EXPLOITED
+
+    EXPLOITED -->|Yes| KEVYES
+    EXPLOITED -->|No| KEVNO
+
+    KEVYES --> CONTEXT
+    KEVNO --> CONTEXT
+
+    MITRE --> CONTEXT
+
+    CONTEXT --> AI
+
+    AI -->|Available| ANALYSIS
+    AI -->|Unavailable| FALLBACK
+
+    ANALYSIS --> STORE
+    FALLBACK --> STORE
+
+    STORE --> RESULT
+    RESULT --> REPORT
 ```
 
----
+### Intelligence Pipeline
+
+HealthGuard AI separates deterministic risk calculation from external intelligence enrichment and Generative AI processing.
+
+| Stage | Function | Source |
+|---|---|---|
+| **1. Validation** | Validates submitted device and security-control information | HealthGuard AI |
+| **2. Risk Analysis** | Calculates the deterministic risk score and security findings | Python Risk Engine |
+| **3. ATT&CK Mapping** | Maps relevant exposure conditions to potential adversary techniques | MITRE ATT&CK |
+| **4. CVE Discovery** | Retrieves potentially relevant vulnerability records | NIST NVD |
+| **5. Exploitation Enrichment** | Determines whether candidate CVEs appear in the KEV catalog | CISA KEV |
+| **6. Context Aggregation** | Combines risk findings, ATT&CK mappings, and vulnerability intelligence | HealthGuard AI |
+| **7. AI Analysis** | Generates a structured explanation and remediation recommendations | OpenAI |
+| **8. Persistence** | Stores assessment results and intelligence context | SQLite |
+| **9. Reporting** | Presents results through the dashboard and printable report | Flask / Jinja2 |
+
+> [!NOTE]
+> External intelligence enriches the assessment but does not independently determine the HealthGuard AI risk score. The numerical score remains controlled by the deterministic Python risk engine.
+
+### Decision-Support Model
+
+```mermaid
+flowchart LR
+
+    DEVICE[Device Security Controls]
+
+    ENGINE[Deterministic Risk Engine]
+
+    SCORE[Risk Score]
+
+    INTEL[Threat Intelligence]
+
+    MITRE[ATT&CK Context]
+
+    AI[Generative AI]
+
+    OUTPUT[Security Assessment]
+
+    DEVICE --> ENGINE
+    ENGINE --> SCORE
+
+    SCORE --> OUTPUT
+
+    DEVICE --> INTEL
+    DEVICE --> MITRE
+
+    INTEL --> AI
+    MITRE --> AI
+    SCORE --> AI
+
+    AI --> OUTPUT
+```
+
+**Risk Engine = Decision Logic**  
+**Threat Intelligence = Security Context**  
+**Generative AI = Explanation & Recommendations**
 
 # Installation
 
