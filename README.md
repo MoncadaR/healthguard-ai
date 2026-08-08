@@ -305,73 +305,78 @@ AI     = Explanation
 
 # System Architecture
 
-```text
-                         ┌─────────────────────┐
-                         │        User         │
-                         └──────────┬──────────┘
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │ Assessment Interface │
-                         └──────────┬──────────┘
-                                    │
-                                    ▼
-                         ┌─────────────────────┐
-                         │  Flask Application  │
-                         └──────────┬──────────┘
-                                    │
-              ┌─────────────────────┼─────────────────────┐
-              │                     │                     │
-              ▼                     ▼                     ▼
-    ┌──────────────────┐   ┌─────────────────┐   ┌─────────────────┐
-    │ Risk Engine      │   │ SQLite Database │   │ MITRE ATT&CK    │
-    │ Python Rules     │   │ Assessment Data │   │ Mapping         │
-    └────────┬─────────┘   └─────────────────┘   └─────────────────┘
-             │
-             ▼
-    ┌──────────────────┐
-    │ Security Findings│
-    └────────┬─────────┘
-             │
-             ▼
-    ┌──────────────────┐
-    │     NVD API      │
-    └────────┬─────────┘
-             │
-             ▼
-    ┌──────────────────┐
-    │ Candidate CVEs   │
-    └────────┬─────────┘
-             │
-             ▼
-    ┌──────────────────┐
-    │    CISA KEV      │
-    └────────┬─────────┘
-             │
-             ▼
-    ┌──────────────────┐
-    │ Exploitation     │
-    │ Intelligence     │
-    └────────┬─────────┘
-             │
-             ▼
-    ┌──────────────────┐
-    │   OpenAI API     │
-    └────────┬─────────┘
-             │
-             ▼
-    ┌──────────────────────────┐
-    │ AI-Assisted Assessment   │
-    └────────────┬─────────────┘
-                 │
-                 ▼
-    ┌──────────────────────────┐
-    │ Dashboard / History /    │
-    │ Printable Reports        │
-    └──────────────────────────┘
-```
+```mermaid
+flowchart TB
 
----
+    subgraph USER["User Layer"]
+        U[Security Analyst / Healthcare Technology Professional]
+    end
+
+    subgraph PRESENTATION["Presentation Layer"]
+        FORM[Medical Device Assessment Form]
+        DASH[Dashboard]
+        HIST[Assessment History]
+        REP[Printable Security Report]
+    end
+
+    subgraph APPLICATION["Application Layer"]
+        FLASK[Flask Application]
+        VALID[Input Validation]
+        ORCH[Assessment Orchestration]
+    end
+
+    subgraph ANALYSIS["Security Analysis Layer"]
+        RISK[Deterministic Risk Engine]
+        MITRE[MITRE ATT&CK Mapper]
+    end
+
+    subgraph INTEL["Threat Intelligence Layer"]
+        NVD[NIST NVD API]
+        CVE[Candidate CVEs]
+        KEV[CISA KEV Catalog]
+        ENRICH[Exploitation Intelligence]
+    end
+
+    subgraph AI_LAYER["AI Layer"]
+        OPENAI[OpenAI API]
+        AIANALYSIS[AI-Assisted Security Analysis]
+    end
+
+    subgraph DATA["Data Layer"]
+        SQLITE[(SQLite Database)]
+    end
+
+    U --> FORM
+
+    FORM --> FLASK
+    FLASK --> VALID
+    VALID --> ORCH
+
+    ORCH --> RISK
+    ORCH --> MITRE
+    ORCH --> NVD
+
+    NVD --> CVE
+    CVE --> KEV
+    KEV --> ENRICH
+
+    RISK --> ORCH
+    MITRE --> ORCH
+    ENRICH --> ORCH
+
+    ORCH --> OPENAI
+    OPENAI --> AIANALYSIS
+    AIANALYSIS --> ORCH
+
+    ORCH --> SQLITE
+
+    SQLITE --> DASH
+    SQLITE --> HIST
+    SQLITE --> REP
+
+    ORCH --> DASH
+    ORCH --> REP
+```
 
 # Technology Stack
 
