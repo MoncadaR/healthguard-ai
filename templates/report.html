@@ -1,322 +1,1339 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
 
     <meta
         name="viewport"
-        content="width=device-width, initial-scale=1"
+        content="width=device-width, initial-scale=1.0"
     >
 
     <title>
-        HealthGuard AI Report
+        HealthGuard AI Report - {{ assessment["device_name"] }}
     </title>
 
-    <link
-        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-        rel="stylesheet"
-    >
-
     <style>
+        :root {
+            --ink: #172033;
+            --muted: #667085;
+            --border: #dfe3ea;
+            --surface: #f7f9fc;
+            --surface-strong: #eef2f7;
+
+            --low: #157347;
+            --medium: #9a6700;
+            --high: #b54708;
+            --critical: #b42318;
+
+            --blue: #1f4e79;
+            --blue-light: #eaf2f8;
+
+            --green-light: #edf7f1;
+            --red-light: #fff1f0;
+            --amber-light: #fff8e6;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            font-size: 15px;
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            margin: 0;
+            background: #ffffff;
+
+            color: var(--ink);
+
+            font-family:
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                Arial,
+                Helvetica,
+                sans-serif;
+
+            font-size: 0.96rem;
+            line-height: 1.55;
+
+            letter-spacing: 0.01em;
+
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .report {
+            max-width: 1050px;
+            margin: 0 auto;
+            padding: 42px 48px 60px;
+        }
+
+        .report-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+
+            padding-bottom: 24px;
+            margin-bottom: 28px;
+
+            border-bottom: 3px solid var(--blue);
+        }
+
+        .brand {
+            max-width: 70%;
+        }
+
+        .brand-name {
+            margin: 0;
+
+            font-size: 2.25rem;
+            line-height: 1.05;
+            font-weight: 760;
+
+            letter-spacing: -0.035em;
+        }
+
+        .brand-subtitle {
+            margin: 8px 0 0;
+
+            font-size: 1.08rem;
+            font-weight: 500;
+
+            color: var(--muted);
+            letter-spacing: 0.01em;
+        }
+
+        .report-meta {
+            text-align: right;
+
+            color: var(--muted);
+            font-size: 0.82rem;
+            line-height: 1.65;
+        }
+
+        .report-meta strong {
+            color: var(--ink);
+        }
+
+        .classification-bar {
+            margin-bottom: 28px;
+
+            padding: 13px 18px;
+
+            border-radius: 7px;
+
+            background: var(--surface);
+            border: 1px solid var(--border);
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            font-size: 0.82rem;
+            color: var(--muted);
+
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .classification-bar strong {
+            color: var(--ink);
+            letter-spacing: 0.02em;
+        }
+
+        .executive-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 18px;
+
+            margin-bottom: 30px;
+        }
+
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 10px;
+
+            background: #ffffff;
+
+            padding: 20px 22px;
+
+            break-inside: avoid;
+        }
+
+        .card-soft {
+            background: var(--surface);
+        }
+
+        .card-title {
+            margin: 0 0 15px;
+
+            font-size: 0.76rem;
+            font-weight: 750;
+
+            color: var(--muted);
+
+            letter-spacing: 0.09em;
+            text-transform: uppercase;
+        }
+
+        .risk-card {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+
+            min-height: 220px;
+
+            text-align: center;
+
+            border-top: 5px solid var(--blue);
+        }
+
+        .risk-score {
+            margin: 4px 0 0;
+
+            font-size: 4.1rem;
+            line-height: 1;
+            font-weight: 780;
+
+            letter-spacing: -0.06em;
+        }
+
+        .risk-denominator {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--muted);
+
+            letter-spacing: -0.025em;
+        }
+
+        .risk-level {
+            margin-top: 12px;
+
+            font-size: 1rem;
+            font-weight: 750;
+
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        .risk-low {
+            color: var(--low);
+        }
+
+        .risk-medium {
+            color: var(--medium);
+        }
+
+        .risk-high {
+            color: var(--high);
+        }
+
+        .risk-critical {
+            color: var(--critical);
+        }
+
+        .device-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            column-gap: 30px;
+            row-gap: 16px;
+        }
+
+        .data-item {
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 9px;
+        }
+
+        .data-label {
+            display: block;
+
+            margin-bottom: 3px;
+
+            color: var(--muted);
+
+            font-size: 0.72rem;
+            font-weight: 700;
+
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+
+        .data-value {
+            display: block;
+
+            font-size: 0.96rem;
+            font-weight: 560;
+
+            color: var(--ink);
+        }
+
+        section {
+            margin-top: 34px;
+        }
+
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            margin-bottom: 16px;
+
+            break-after: avoid;
+        }
+
+        .section-number {
+            width: 31px;
+            height: 31px;
+
+            border-radius: 7px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: var(--blue);
+            color: #ffffff;
+
+            font-size: 0.76rem;
+            font-weight: 750;
+        }
+
+        .section-title {
+            margin: 0;
+
+            font-size: 1.36rem;
+            line-height: 1.2;
+            font-weight: 720;
+
+            letter-spacing: -0.025em;
+        }
+
+        .section-description {
+            margin: -6px 0 18px 43px;
+
+            color: var(--muted);
+
+            font-size: 0.85rem;
             line-height: 1.5;
         }
 
-        .report-container {
-            max-width: 900px;
-            margin: 30px auto;
+        .finding-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            gap: 10px;
         }
 
-        .risk-box {
-            border: 2px solid #333;
-            padding: 20px;
+        .finding {
+            padding: 13px 15px;
+
+            background: var(--red-light);
+
+            border-left: 4px solid #d92d20;
+            border-radius: 5px;
+
+            font-size: 0.88rem;
+
+            break-inside: avoid;
+        }
+
+        .positive-control {
+            padding: 13px 15px;
+
+            background: var(--green-light);
+
+            border-left: 4px solid #198754;
+            border-radius: 5px;
+
+            font-size: 0.88rem;
+
+            break-inside: avoid;
+        }
+
+        .recommendation-list {
+            counter-reset: recommendation;
+
+            display: grid;
+            gap: 10px;
+
+            padding: 0;
+            margin: 0;
+
+            list-style: none;
+        }
+
+        .recommendation-list li {
+            counter-increment: recommendation;
+
+            display: grid;
+            grid-template-columns: 34px 1fr;
+            gap: 10px;
+
+            align-items: start;
+
+            padding: 11px 14px;
+
+            border: 1px solid var(--border);
+            border-radius: 7px;
+
+            break-inside: avoid;
+        }
+
+        .recommendation-list li::before {
+            content: counter(recommendation);
+
+            width: 27px;
+            height: 27px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: var(--blue-light);
+            color: var(--blue);
+
+            border-radius: 50%;
+
+            font-size: 0.75rem;
+            font-weight: 750;
+        }
+
+        .intel-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 11px;
+
+            margin-bottom: 18px;
+        }
+
+        .metric {
+            padding: 15px;
+
+            background: var(--surface);
+
+            border: 1px solid var(--border);
+            border-radius: 8px;
+
             text-align: center;
+
+            break-inside: avoid;
+        }
+
+        .metric-value {
+            display: block;
+
+            font-size: 1.55rem;
+            line-height: 1.1;
+            font-weight: 760;
+
+            letter-spacing: -0.03em;
+        }
+
+        .metric-label {
+            display: block;
+
+            margin-top: 6px;
+
+            color: var(--muted);
+
+            font-size: 0.69rem;
+            font-weight: 700;
+
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+        }
+
+        table {
+            width: 100%;
+
+            border-collapse: collapse;
+            border-spacing: 0;
+
+            font-size: 0.79rem;
+
+            break-inside: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tr {
+            break-inside: avoid;
+        }
+
+        th {
+            padding: 10px 9px;
+
+            text-align: left;
+            vertical-align: bottom;
+
+            background: var(--surface-strong);
+
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+
+            color: #344054;
+
+            font-size: 0.68rem;
+            font-weight: 750;
+
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+        }
+
+        td {
+            padding: 11px 9px;
+
+            vertical-align: top;
+
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cve-id {
+            font-weight: 720;
+            white-space: nowrap;
+        }
+
+        .severity {
+            font-size: 0.69rem;
+            font-weight: 750;
+
+            letter-spacing: 0.04em;
+        }
+
+        .status-pill {
+            display: inline-block;
+
+            padding: 3px 8px;
+
+            border-radius: 999px;
+
+            font-size: 0.65rem;
+            font-weight: 750;
+
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .status-yes {
+            background: #fee4e2;
+            color: #b42318;
+        }
+
+        .status-no {
+            background: #f2f4f7;
+            color: #475467;
+        }
+
+        .status-unknown {
+            background: #fff3cd;
+            color: #7a5b00;
+        }
+
+        .cve-description {
+            color: #344054;
+            line-height: 1.45;
+        }
+
+        .kev-detail {
+            margin-top: 7px;
+
+            padding: 8px 10px;
+
+            background: var(--red-light);
+
+            border-left: 3px solid #d92d20;
+            border-radius: 4px;
+
+            font-size: 0.72rem;
+        }
+
+        .kev-detail strong {
+            color: #7a271a;
+        }
+
+        .mitre-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .mitre-card {
+            padding: 15px;
+
+            border: 1px solid var(--border);
+            border-radius: 8px;
+
+            break-inside: avoid;
+        }
+
+        .mitre-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+
+            margin-bottom: 8px;
+        }
+
+        .mitre-id {
+            color: var(--blue);
+
+            font-size: 0.78rem;
+            font-weight: 760;
+
+            letter-spacing: 0.06em;
+        }
+
+        .mitre-name {
+            font-weight: 700;
+        }
+
+        .mitre-tactic {
+            margin: 4px 0 8px;
+
+            color: var(--muted);
+
+            font-size: 0.73rem;
+            font-weight: 650;
+        }
+
+        .mitre-reason {
+            margin: 0;
+
+            color: #344054;
+
+            font-size: 0.82rem;
+            line-height: 1.45;
+        }
+
+        .ai-analysis {
+            padding: 23px 25px;
+
+            border: 1px solid var(--border);
+            border-left: 5px solid var(--blue);
+
+            border-radius: 8px;
+
+            background: var(--surface);
+
+            font-size: 0.88rem;
+            line-height: 1.72;
+
+            white-space: pre-wrap;
+        }
+
+        .notice {
+            padding: 14px 16px;
+
+            border-radius: 6px;
+
+            background: var(--amber-light);
+            border-left: 4px solid #f5a623;
+
+            color: #5f4700;
+
+            font-size: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .footer-note {
+            margin-top: 38px;
+
+            padding-top: 16px;
+
+            border-top: 1px solid var(--border);
+
+            color: var(--muted);
+
+            font-size: 0.7rem;
+            line-height: 1.5;
+        }
+
+        .screen-actions {
+            max-width: 1050px;
+            margin: 18px auto 0;
+
+            padding: 0 48px;
+
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .button {
+            display: inline-block;
+
+            padding: 9px 15px;
+
+            border: 1px solid var(--border);
+            border-radius: 6px;
+
+            background: #ffffff;
+
+            color: var(--ink);
+
+            font: inherit;
+            font-size: 0.84rem;
+
+            cursor: pointer;
+
+            text-decoration: none;
+        }
+
+        .button-primary {
+            background: var(--blue);
+            border-color: var(--blue);
+            color: #ffffff;
+        }
+
+        @page {
+            size: Letter;
+            margin: 0.55in 0.55in 0.65in;
         }
 
         @media print {
-            .no-print {
-                display: none;
+            html {
+                font-size: 12px;
             }
 
-            .report-container {
-                margin: 0;
+            body {
+                background: #ffffff;
+            }
+
+            .screen-actions {
+                display: none !important;
+            }
+
+            .report {
                 max-width: none;
+                margin: 0;
+                padding: 0;
+            }
+
+            .report-header {
+                margin-top: 0;
+            }
+
+            section {
+                break-before: auto;
+            }
+
+            .page-break {
+                break-before: page;
+            }
+
+            .avoid-break {
+                break-inside: avoid;
+            }
+
+            a {
+                color: inherit;
+                text-decoration: none;
+            }
+        }
+
+        @media screen and (max-width: 800px) {
+            .report {
+                padding: 24px;
+            }
+
+            .screen-actions {
+                padding: 0 24px;
+            }
+
+            .executive-grid,
+            .finding-grid,
+            .mitre-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .intel-summary {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .device-grid {
+                grid-template-columns: 1fr;
             }
         }
     </style>
 </head>
 
 <body>
-<div class="report-container">
-    <div class="no-print mb-4">
-        <button
-            class="btn btn-primary"
-            onclick="window.print()"
-        >
-            Print or Save as PDF
-        </button>
 
-        <a
-            class="btn btn-outline-secondary"
-            href="{{ url_for(
-                'view_result',
-                assessment_id=assessment['id']
-            ) }}"
-        >
-            Return to Results
-        </a>
-    </div>
+<div class="screen-actions">
+    <a
+        class="button"
+        href="{{ url_for('view_result', assessment_id=assessment['id']) }}"
+    >
+        Back to Assessment
+    </a>
 
-    <header class="border-bottom pb-3 mb-4">
-        <h1>
-            HealthGuard AI
-        </h1>
+    <button
+        class="button button-primary"
+        onclick="window.print()"
+    >
+        Print / Save PDF
+    </button>
+</div>
 
-        <h2>
-            Medical Device Cybersecurity Risk Assessment
-        </h2>
+<main class="report">
 
-        <p class="text-muted">
-            Assessment ID:
-            {{ assessment["id"] }}
+    <header class="report-header">
+        <div class="brand">
+            <h1 class="brand-name">
+                HealthGuard AI
+            </h1>
 
-            · Created:
+            <p class="brand-subtitle">
+                Medical Device Cybersecurity Risk Assessment
+            </p>
+        </div>
+
+        <div class="report-meta">
+            <strong>Assessment {{ assessment["id"] }}</strong>
+            <br>
+
             {{ assessment["created_at"] }}
-        </p>
+        </div>
     </header>
 
-    <section class="mb-4">
-        <h3>
-            Device Information
-        </h3>
+    <div class="classification-bar">
+        <span>
+            Cybersecurity Decision-Support Report
+        </span>
 
-        <table class="table table-bordered">
-            <tr>
-                <th>Device</th>
-                <td>
-                    {{ assessment["device_name"] }}
-                </td>
-            </tr>
+        <strong>
+            Educational Prototype
+        </strong>
+    </div>
 
-            <tr>
-                <th>Manufacturer</th>
-                <td>
-                    {{ assessment["manufacturer"] or "Not provided" }}
-                </td>
-            </tr>
+    <div class="executive-grid">
 
-            <tr>
-                <th>Model</th>
-                <td>
-                    {{ assessment["model"] or "Not provided" }}
-                </td>
-            </tr>
+        <div class="card">
+            <p class="card-title">
+                Device Profile
+            </p>
 
-            <tr>
-                <th>Device Type</th>
-                <td>
-                    {{ assessment["device_type"] }}
-                </td>
-            </tr>
+            <div class="device-grid">
 
-            <tr>
-                <th>Department</th>
-                <td>
-                    {{ assessment["department"] or "Not provided" }}
-                </td>
-            </tr>
+                <div class="data-item">
+                    <span class="data-label">
+                        Device
+                    </span>
 
-            <tr>
-                <th>Operating System</th>
-                <td>
-                    {{ assessment["operating_system"] or "Not provided" }}
-                </td>
-            </tr>
+                    <span class="data-value">
+                        {{ assessment["device_name"] }}
+                    </span>
+                </div>
 
-            <tr>
-                <th>Support Status</th>
-                <td>
-                    {{ assessment["support_status"]|title }}
-                </td>
-            </tr>
-        </table>
-    </section>
+                <div class="data-item">
+                    <span class="data-label">
+                        Device Type
+                    </span>
 
-    <section class="mb-4">
-        <div class="risk-box">
-            <h3>
-                Overall Risk
-            </h3>
+                    <span class="data-value">
+                        {{ assessment["device_type"] or "Not provided" }}
+                    </span>
+                </div>
 
-            <div class="display-4 fw-bold">
-                {{ assessment["risk_score"] }}/100
-            </div>
+                <div class="data-item">
+                    <span class="data-label">
+                        Manufacturer
+                    </span>
 
-            <div class="fs-4">
-                {{ assessment["risk_level"] }}
+                    <span class="data-value">
+                        {{ assessment["manufacturer"] or "Not provided" }}
+                    </span>
+                </div>
+
+                <div class="data-item">
+                    <span class="data-label">
+                        Model
+                    </span>
+
+                    <span class="data-value">
+                        {{ assessment["model"] or "Not provided" }}
+                    </span>
+                </div>
+
+                <div class="data-item">
+                    <span class="data-label">
+                        Operating System
+                    </span>
+
+                    <span class="data-value">
+                        {{ assessment["operating_system"] or "Not provided" }}
+                    </span>
+                </div>
+
+                <div class="data-item">
+                    <span class="data-label">
+                        Support Status
+                    </span>
+
+                    <span class="data-value">
+                        {{ assessment["support_status"]|title }}
+                    </span>
+                </div>
+
+                <div class="data-item">
+                    <span class="data-label">
+                        Department
+                    </span>
+
+                    <span class="data-value">
+                        {{ assessment["department"] or "Not provided" }}
+                    </span>
+                </div>
+
+                <div class="data-item">
+                    <span class="data-label">
+                        CVE Search
+                    </span>
+
+                    <span class="data-value">
+                        {{ assessment["cve_search_term"] or "Not performed" }}
+                    </span>
+                </div>
+
             </div>
         </div>
-    </section>
 
-    <section class="mb-4">
-        <h3>
-            Identified Findings
-        </h3>
+        <div class="card risk-card">
+            <p class="card-title">
+                Overall Cybersecurity Risk
+            </p>
+
+            <div>
+                <span class="risk-score">
+                    {{ assessment["risk_score"] }}
+                </span>
+
+                <span class="risk-denominator">
+                    /100
+                </span>
+            </div>
+
+            <div
+                class="
+                    risk-level
+                    risk-{{ assessment['risk_level']|lower }}
+                "
+            >
+                {{ assessment["risk_level"] }} Risk
+            </div>
+        </div>
+
+    </div>
+
+
+    <section>
+        <div class="section-heading">
+            <div class="section-number">01</div>
+
+            <h2 class="section-title">
+                Key Security Findings
+            </h2>
+        </div>
 
         {% if findings %}
-        <ul>
+        <div class="finding-grid">
             {% for finding in findings %}
-            <li>
+            <div class="finding">
                 {{ finding }}
-            </li>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
         {% else %}
-        <p>
-            No major weaknesses were identified.
-        </p>
+        <p>No security findings were generated.</p>
         {% endif %}
     </section>
 
-    <section class="mb-4">
-        <h3>
-            Recommended Controls
-        </h3>
+
+    <section>
+        <div class="section-heading">
+            <div class="section-number">02</div>
+
+            <h2 class="section-title">
+                Recommended Controls
+            </h2>
+        </div>
 
         {% if recommendations %}
-        <ol>
+        <ol class="recommendation-list">
             {% for recommendation in recommendations %}
             <li>
-                {{ recommendation }}
+                <span>{{ recommendation }}</span>
             </li>
             {% endfor %}
         </ol>
         {% else %}
-        <p>
-            Continue periodic cybersecurity control reviews.
-        </p>
+        <p>No recommendations were generated.</p>
         {% endif %}
     </section>
 
-    <section class="mb-4">
-        <h3>
-            Existing Positive Controls
-        </h3>
+
+    <section>
+        <div class="section-heading">
+            <div class="section-number">03</div>
+
+            <h2 class="section-title">
+                Existing Positive Controls
+            </h2>
+        </div>
 
         {% if positive_controls %}
-        <ul>
+        <div class="finding-grid">
             {% for control in positive_controls %}
-            <li>
+            <div class="positive-control">
                 {{ control }}
-            </li>
+            </div>
             {% endfor %}
-        </ul>
+        </div>
         {% else %}
-        <p>
-            No confirmed positive controls were identified.
-        </p>
+        <p>No positive controls were documented.</p>
         {% endif %}
     </section>
-<section class="mb-4">
-    <h3>Potentially Relevant CVEs</h3>
 
-    <p>
-        Search term:
-        {{ assessment["cve_search_term"] or "Not supplied" }}
-    </p>
 
-    <p>
-        These are keyword-based candidate results. They do not
-        confirm product or version applicability.
-    </p>
+    <section class="page-break">
+        <div class="section-heading">
+            <div class="section-number">04</div>
 
-    {% if cve_results %}
-    <table class="table table-bordered">
-        <thead>
-        <tr>
-            <th>CVE</th>
-            <th>CVSS</th>
-            <th>Severity</th>
-            <th>Description</th>
-            <th>Known Exploited</th>
-            <th>Required Action</th>
-        </tr>
-        </thead>
+            <h2 class="section-title">
+                Vulnerability & Exploitation Intelligence
+            </h2>
+        </div>
 
-        <tbody>
+        <p class="section-description">
+            NVD keyword matches are candidate vulnerabilities and do not
+            confirm product or version applicability.
+        </p>
+
+        {% set ns = namespace(
+            exploited=0,
+            critical=0,
+            high=0
+        ) %}
+
         {% for cve in cve_results %}
-        <tr>
-            <td>{{ cve["cve_id"] }}</td>
-            <td>
-                {{ cve["cvss_score"] if cve["cvss_score"] is not none else "N/A" }}
-            </td>
-            <td>{{ cve["severity"] }}</td>
-            <td>{{ cve["description"] }}</td>
-            <td>
-                {% if cve["known_exploited"] is sameas true %}
-                    Yes
-                {% elif cve["known_exploited"] is sameas false %}
-                    No
-                {% else %}
-                    Unknown
-                {% endif %}
-            </td>
 
-            <td>
-                {% if cve["kev"] %}
-                    {{ cve["kev"]["required_action"] }}
-                {% else %}
-                    Not applicable
-                {% endif %}
-            </td>
-        </tr>
+            {% if cve["known_exploited"] is sameas true %}
+                {% set ns.exploited = ns.exploited + 1 %}
+            {% endif %}
+
+            {% if cve["severity"] == "CRITICAL" %}
+                {% set ns.critical = ns.critical + 1 %}
+            {% endif %}
+
+            {% if cve["severity"] == "HIGH" %}
+                {% set ns.high = ns.high + 1 %}
+            {% endif %}
+
         {% endfor %}
-        </tbody>
-    </table>
 
-    {% elif assessment["cve_lookup_error"] %}
-    <p>
-        NVD lookup unavailable:
-        {{ assessment["cve_lookup_error"] }}
-    </p>
+        <div class="intel-summary">
 
-    {% else %}
-    <p>No candidate CVEs were stored.</p>
-    {% endif %}
-</section>
+            <div class="metric">
+                <span class="metric-value">
+                    {{ cve_results|length }}
+                </span>
 
-    <section class="mb-4">
-    <h3>
-        AI-Assisted Security Analysis
-    </h3>
+                <span class="metric-label">
+                    CVE Candidates
+                </span>
+            </div>
 
-    {% if assessment["ai_analysis"] %}
-    <div class="ai-output">
-        {{ assessment["ai_analysis"] }}
-    </div>
-    {% else %}
-    <p>
-        AI analysis was unavailable when this assessment was
-        generated.
-    </p>
-    {% endif %}
-</section>
+            <div class="metric">
+                <span class="metric-value">
+                    {{ ns.critical }}
+                </span>
 
-    <section class="border-top pt-3">
-        <h3>
-            Limitations
-        </h3>
+                <span class="metric-label">
+                    Critical
+                </span>
+            </div>
+
+            <div class="metric">
+                <span class="metric-value">
+                    {{ ns.high }}
+                </span>
+
+                <span class="metric-label">
+                    High
+                </span>
+            </div>
+
+            <div class="metric">
+                <span class="metric-value">
+                    {{ ns.exploited }}
+                </span>
+
+                <span class="metric-label">
+                    CISA KEV Matches
+                </span>
+            </div>
+
+        </div>
+
+        {% if cve_results %}
+
+        <table>
+            <thead>
+            <tr>
+                <th style="width: 15%;">
+                    CVE
+                </th>
+
+                <th style="width: 8%;">
+                    CVSS
+                </th>
+
+                <th style="width: 11%;">
+                    Severity
+                </th>
+
+                <th style="width: 46%;">
+                    Assessment Context
+                </th>
+
+                <th style="width: 20%;">
+                    Exploitation
+                </th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            {% for cve in cve_results %}
+
+            <tr>
+                <td class="cve-id">
+                    {{ cve["cve_id"] }}
+                </td>
+
+                <td>
+                    {{ cve["cvss_score"] if cve["cvss_score"] is not none else "N/A" }}
+                </td>
+
+                <td>
+                    <span class="severity">
+                        {{ cve["severity"] }}
+                    </span>
+                </td>
+
+                <td class="cve-description">
+                    {{ cve["description"][:330] }}
+
+                    {% if cve["description"]|length > 330 %}
+                        …
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if cve["known_exploited"] is sameas true %}
+
+                        <span class="status-pill status-yes">
+                            KEV Match
+                        </span>
+
+                        {% if cve["kev"] %}
+                        <div class="kev-detail">
+
+                            <strong>
+                                {{ cve["kev"]["vendor_project"] }}
+                                /
+                                {{ cve["kev"]["product"] }}
+                            </strong>
+
+                            {% if cve["kev"]["known_ransomware_use"] %}
+                            <br>
+                            Ransomware:
+                            {{ cve["kev"]["known_ransomware_use"] }}
+                            {% endif %}
+
+                            {% if cve["kev"]["required_action"] %}
+                            <br><br>
+
+                            <strong>
+                                Required Action
+                            </strong>
+
+                            <br>
+
+                            {{ cve["kev"]["required_action"][:180] }}
+
+                            {% if cve["kev"]["required_action"]|length > 180 %}
+                                …
+                            {% endif %}
+                            {% endif %}
+
+                        </div>
+                        {% endif %}
+
+                    {% elif cve["known_exploited"] is sameas false %}
+
+                        <span class="status-pill status-no">
+                            No KEV Match
+                        </span>
+
+                    {% else %}
+
+                        <span class="status-pill status-unknown">
+                            Unknown
+                        </span>
+
+                    {% endif %}
+                </td>
+            </tr>
+
+            {% endfor %}
+
+            </tbody>
+        </table>
+
+        {% else %}
+
+        <div class="notice">
+            No CVE candidates were stored for this assessment.
+        </div>
+
+        {% endif %}
+    </section>
+
+
+    <section>
+        <div class="section-heading">
+            <div class="section-number">05</div>
+
+            <h2 class="section-title">
+                MITRE ATT&amp;CK Context
+            </h2>
+        </div>
+
+        <p class="section-description">
+            Technique mappings describe potentially relevant adversary
+            behavior associated with identified security conditions.
+            They do not indicate observed malicious activity.
+        </p>
+
+        {% if mitre_results %}
+
+        <div class="mitre-grid">
+
+            {% for technique in mitre_results %}
+
+            <div class="mitre-card">
+
+                <div class="mitre-header">
+                    <span class="mitre-id">
+                        {{ technique["technique_id"] }}
+                    </span>
+
+                    <span class="mitre-name">
+                        {{ technique["name"] }}
+                    </span>
+                </div>
+
+                <div class="mitre-tactic">
+                    {{ technique["tactic"] }}
+                </div>
+
+                <p class="mitre-reason">
+                    {{ technique["reason"] }}
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
 
         <p>
-            This report was generated by an educational prototype.
-            It is not a vulnerability scan, penetration test,
-            clinical recommendation, legal opinion, regulatory audit,
-            or HIPAA compliance certification. Findings should be
-            reviewed by qualified cybersecurity, biomedical
-            engineering, privacy, compliance, and clinical personnel.
+            No MITRE ATT&amp;CK mappings were generated.
         </p>
+
+        {% endif %}
     </section>
-</div>
+
+
+    <section class="page-break">
+        <div class="section-heading">
+            <div class="section-number">06</div>
+
+            <h2 class="section-title">
+                AI-Assisted Security Analysis
+            </h2>
+        </div>
+
+        <p class="section-description">
+            Generated as decision-support commentary after deterministic
+            risk scoring. The AI does not modify the calculated score.
+        </p>
+
+        {% if assessment["ai_analysis"] %}
+
+        <div class="ai-analysis">
+{{ assessment["ai_analysis"] }}
+        </div>
+
+        {% else %}
+
+        <div class="notice">
+            AI-assisted analysis was unavailable for this assessment.
+        </div>
+
+        {% endif %}
+    </section>
+
+
+    <section>
+        <div class="section-heading">
+            <div class="section-number">07</div>
+
+            <h2 class="section-title">
+                Report Limitations
+            </h2>
+        </div>
+
+        <div class="notice">
+            HealthGuard AI is an educational cybersecurity decision-support
+            prototype. This report is not a vulnerability scan, penetration
+            test, clinical recommendation, legal opinion, regulatory audit,
+            FDA determination, or HIPAA compliance certification.
+
+            Findings should be independently reviewed by qualified
+            cybersecurity, biomedical engineering, privacy, compliance,
+            and clinical personnel before operational use.
+        </div>
+    </section>
+
+
+    <footer class="footer-note">
+        <strong>HealthGuard AI</strong>
+        &nbsp;·&nbsp;
+        Medical Device Cybersecurity Risk Assessment
+
+        <br>
+
+        Assessment ID:
+        {{ assessment["id"] }}
+        &nbsp;·&nbsp;
+
+        Device:
+        {{ assessment["device_name"] }}
+
+        <br><br>
+
+        Generated for educational and research purposes.
+    </footer>
+
+</main>
+
 </body>
 </html>

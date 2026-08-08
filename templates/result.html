@@ -1,347 +1,752 @@
 {% extends "base.html" %}
 
 {% block title %}
-Assessment Results | HealthGuard AI
+Assessment Results - HealthGuard AI
 {% endblock %}
 
 {% block content %}
-<div class="d-flex flex-wrap justify-content-between align-items-start mb-4">
-    <div>
-        <h1>
-            {{ assessment["device_name"] }}
-        </h1>
 
-        <p class="text-muted">
-            {{ assessment["manufacturer"] or "Manufacturer not provided" }}
+{% set ns = namespace(
+    exploited=0,
+    critical=0,
+    high=0
+) %}
 
-            {% if assessment["model"] %}
-                · {{ assessment["model"] }}
-            {% endif %}
-        </p>
-    </div>
+{% for cve in cve_results %}
+    {% if cve["known_exploited"] is sameas true %}
+        {% set ns.exploited = ns.exploited + 1 %}
+    {% endif %}
 
-    <div class="text-end">
-        <div class="display-5 fw-bold">
-            {{ assessment["risk_score"] }}/100
+    {% if cve["severity"] == "CRITICAL" %}
+        {% set ns.critical = ns.critical + 1 %}
+    {% endif %}
+
+    {% if cve["severity"] == "HIGH" %}
+        {% set ns.high = ns.high + 1 %}
+    {% endif %}
+{% endfor %}
+
+
+<div class="result-page">
+
+    <div class="result-header">
+        <div>
+            <div class="eyebrow">
+                CYBERSECURITY ASSESSMENT
+            </div>
+
+            <h1 class="result-title">
+                {{ assessment["device_name"] }}
+            </h1>
+
+            <p class="result-subtitle">
+                Medical Device Cybersecurity Risk Assessment
+            </p>
         </div>
 
-        <span class="badge fs-6 risk-{{ assessment['risk_level']|lower }}">
-            {{ assessment["risk_level"] }} Risk
-        </span>
-    </div>
-</div>
+        <div class="result-header-actions">
+            <a
+                href="{{ url_for('report', assessment_id=assessment['id']) }}"
+                class="btn btn-outline-secondary"
+                target="_blank"
+            >
+                Printable Report
+            </a>
 
-<div class="progress mb-4" style="height: 28px;">
-    <div
-        class="progress-bar"
-        role="progressbar"
-        style="width: {{ assessment['risk_score'] }}%;"
-    >
-        {{ assessment["risk_score"] }}%
+            <a
+                href="{{ url_for('assessment') }}"
+                class="btn btn-primary"
+            >
+                New Assessment
+            </a>
+        </div>
     </div>
-</div>
 
-<div class="row g-4">
-    <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <strong>
+
+    <div class="row g-4 mb-4">
+
+        <div class="col-lg-4">
+            <div class="hg-card risk-summary-card h-100">
+
+                <div class="section-label">
+                    Overall Risk
+                </div>
+
+                <div class="risk-score-display">
+                    {{ assessment["risk_score"] }}
+                    <span>/100</span>
+                </div>
+
+                <div
+                    class="
+                        risk-level-display
+                        risk-{{ assessment['risk_level']|lower }}
+                    "
+                >
+                    {{ assessment["risk_level"] }} Risk
+                </div>
+
+                <div class="risk-divider"></div>
+
+                <p class="risk-caption">
+                    Calculated using the deterministic
+                    HealthGuard AI risk engine.
+                </p>
+
+            </div>
+        </div>
+
+
+        <div class="col-lg-8">
+            <div class="hg-card h-100">
+
+                <div class="section-label mb-3">
+                    Device Profile
+                </div>
+
+                <div class="device-profile-grid">
+
+                    <div class="profile-item">
+                        <span class="profile-label">
+                            Manufacturer
+                        </span>
+
+                        <span class="profile-value">
+                            {{ assessment["manufacturer"] or "Not provided" }}
+                        </span>
+                    </div>
+
+                    <div class="profile-item">
+                        <span class="profile-label">
+                            Model
+                        </span>
+
+                        <span class="profile-value">
+                            {{ assessment["model"] or "Not provided" }}
+                        </span>
+                    </div>
+
+                    <div class="profile-item">
+                        <span class="profile-label">
+                            Device Type
+                        </span>
+
+                        <span class="profile-value">
+                            {{ assessment["device_type"] or "Not provided" }}
+                        </span>
+                    </div>
+
+                    <div class="profile-item">
+                        <span class="profile-label">
+                            Department
+                        </span>
+
+                        <span class="profile-value">
+                            {{ assessment["department"] or "Not provided" }}
+                        </span>
+                    </div>
+
+                    <div class="profile-item">
+                        <span class="profile-label">
+                            Operating System
+                        </span>
+
+                        <span class="profile-value">
+                            {{ assessment["operating_system"] or "Not provided" }}
+                        </span>
+                    </div>
+
+                    <div class="profile-item">
+                        <span class="profile-label">
+                            Support Status
+                        </span>
+
+                        <span class="profile-value">
+                            {{ assessment["support_status"]|title }}
+                        </span>
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <div class="row g-3 mb-5">
+
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-number">
+                    {{ findings|length }}
+                </div>
+
+                <div class="metric-text">
+                    Security Findings
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-number">
+                    {{ cve_results|length }}
+                </div>
+
+                <div class="metric-text">
+                    CVE Candidates
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-number">
+                    {{ ns.exploited }}
+                </div>
+
+                <div class="metric-text">
+                    CISA KEV Matches
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="metric-card">
+                <div class="metric-number">
+                    {{ mitre_results|length }}
+                </div>
+
+                <div class="metric-text">
+                    ATT&amp;CK Techniques
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+
+    <section class="result-section">
+
+        <div class="result-section-header">
+            <div>
+                <div class="section-label">
+                    SECURITY POSTURE
+                </div>
+
+                <h2>
                     Identified Findings
-                </strong>
+                </h2>
             </div>
 
-            <div class="card-body">
-                {% if findings %}
-                <ul class="mb-0">
-                    {% for finding in findings %}
-                    <li class="mb-2">
+            <span class="section-count">
+                {{ findings|length }}
+            </span>
+        </div>
+
+        {% if findings %}
+
+        <div class="finding-grid">
+
+            {% for finding in findings %}
+
+            <div class="finding-card">
+                <div class="finding-indicator"></div>
+
+                <div>
+                    <div class="finding-title">
+                        Security Finding
+                    </div>
+
+                    <div class="finding-text">
                         {{ finding }}
-                    </li>
-                    {% endfor %}
-                </ul>
-                {% else %}
-                <p class="mb-0">
-                    No major weaknesses were identified.
-                </p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    <div class="col-lg-6">
-        <div class="card h-100">
-            <div class="card-header">
-                <strong>
-                    Recommended Actions
-                </strong>
+                    </div>
+                </div>
             </div>
 
-            <div class="card-body">
-                {% if recommendations %}
-                <ol class="mb-0">
-                    {% for recommendation in recommendations %}
-                    <li class="mb-2">
-                        {{ recommendation }}
-                    </li>
-                    {% endfor %}
-                </ol>
-                {% else %}
-                <p class="mb-0">
-                    Continue periodic cybersecurity reviews.
-                </p>
-                {% endif %}
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card mt-4">
-    <div class="card-header">
-        <strong>
-            Existing Positive Controls
-        </strong>
-    </div>
-
-    <div class="card-body">
-        {% if positive_controls %}
-        <ul class="mb-0">
-            {% for control in positive_controls %}
-            <li class="mb-2">
-                {{ control }}
-            </li>
             {% endfor %}
-        </ul>
-        {% else %}
-        <p class="mb-0">
-            No confirmed positive controls were identified.
-        </p>
-        {% endif %}
-    </div>
-</div>
 
-<div class="card mt-4">
-    <div class="card-header d-flex justify-content-between">
-        <strong>Potentially Relevant CVEs</strong>
-
-        {% if assessment["cve_search_term"] %}
-        <span class="text-muted">
-            Search: {{ assessment["cve_search_term"] }}
-        </span>
-        {% endif %}
-    </div>
-
-    <div class="card-body">
-        <div class="alert alert-warning">
-            Keyword matches do not confirm that this device or
-            software version is vulnerable. Verify the product,
-            version, configuration, and affected CPE information.
         </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            No significant findings were identified.
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <section class="result-section">
+
+        <div class="result-section-header">
+
+            <div>
+                <div class="section-label">
+                    REMEDIATION
+                </div>
+
+                <h2>
+                    Recommended Controls
+                </h2>
+            </div>
+
+        </div>
+
+        {% if recommendations %}
+
+        <div class="recommendation-list">
+
+            {% for recommendation in recommendations %}
+
+            <div class="recommendation-card">
+
+                <div class="recommendation-number">
+                    {{ loop.index }}
+                </div>
+
+                <div class="recommendation-text">
+                    {{ recommendation }}
+                </div>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <section class="result-section">
+
+        <div class="result-section-header">
+
+            <div>
+                <div class="section-label">
+                    EXISTING SAFEGUARDS
+                </div>
+
+                <h2>
+                    Positive Security Controls
+                </h2>
+            </div>
+
+        </div>
+
+        {% if positive_controls %}
+
+        <div class="positive-grid">
+
+            {% for control in positive_controls %}
+
+            <div class="positive-card">
+                <div class="positive-check">
+                    ✓
+                </div>
+
+                <div>
+                    {{ control }}
+                </div>
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            No positive controls were identified.
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <section class="result-section">
+
+        <div class="result-section-header">
+
+            <div>
+                <div class="section-label">
+                    THREAT INTELLIGENCE
+                </div>
+
+                <h2>
+                    Vulnerability & Exploitation Intelligence
+                </h2>
+            </div>
+
+        </div>
+
+        <div class="intel-callout">
+            NVD results are keyword-based candidate vulnerabilities.
+            They do not confirm product or version applicability.
+        </div>
+
+
+        <div class="row g-3 mb-4">
+
+            <div class="col-md-3">
+                <div class="intel-stat">
+                    <strong>{{ cve_results|length }}</strong>
+                    <span>Candidates</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="intel-stat">
+                    <strong>{{ ns.critical }}</strong>
+                    <span>Critical</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="intel-stat">
+                    <strong>{{ ns.high }}</strong>
+                    <span>High</span>
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="intel-stat">
+                    <strong>{{ ns.exploited }}</strong>
+                    <span>Known Exploited</span>
+                </div>
+            </div>
+
+        </div>
+
 
         {% if assessment["cve_lookup_error"] %}
-        <div class="alert alert-secondary">
-        NVD lookup unavailable:
-        {{ assessment["cve_lookup_error"] }}
+
+        <div class="alert alert-warning">
+            NVD lookup unavailable:
+            {{ assessment["cve_lookup_error"] }}
         </div>
+
+        {% endif %}
+
+
         {% if assessment["kev_lookup_error"] %}
-        <div class="alert alert-secondary">
+
+        <div class="alert alert-warning">
             CISA KEV lookup unavailable:
             {{ assessment["kev_lookup_error"] }}
         </div>
+
         {% endif %}
-        {% elif cve_results %}
-        <div class="table-responsive">
-            <table class="table table-hover align-middle">
-                <thead>
-                <tr>
-                    <th>CVE</th>
-                        <th>CVSS</th>
-                        <th>Severity</th>
-                        <th>Known Exploited</th>
-                        <th>Ransomware Use</th>
-                        <th>Description</th>
-                    <th></th>
-                </tr>
-                </thead>
 
-                <tbody>
-                {% for cve in cve_results %}
-                <tr>
-                    <td>
-                        <strong>{{ cve["cve_id"] }}</strong>
-                    </td>
 
-                    <td>
-                        {{ cve["cvss_score"] if cve["cvss_score"] is not none else "N/A" }}
-                    </td>
+        {% if cve_results %}
 
-                    <td>
-                        {{ cve["severity"] }}
-                    </td>
-                    <td>
-                    {% if cve["known_exploited"] is sameas true %}
-                        <span class="badge bg-danger">
-                            Yes
-                        </span>
-                    {% elif cve["known_exploited"] is sameas false %}
-                        <span class="badge bg-secondary">
-                            No
-                        </span>
-                    {% else %}
-                        <span class="badge bg-warning text-dark">
-                            Unknown
-                        </span>
+        <div class="cve-list">
+
+            {% for cve in cve_results %}
+
+            <div
+                class="
+                    cve-card
+                    {% if cve['known_exploited'] is sameas true %}
+                    cve-card-exploited
                     {% endif %}
-                </td>
+                "
+            >
 
-                <td>
-                    {% if cve["kev"] %}
-                        {{ cve["kev"]["known_ransomware_use"] }}
-                    {% else %}
-                        N/A
-                    {% endif %}
-                </td>
+                <div class="cve-top">
 
-                    <td>
-                        {{ cve["description"][:240] }}
+                    <div>
 
-                        {% if cve["description"]|length > 240 %}
-                            ...
-                        {% endif %}
-                    </td>
+                        <div class="cve-id">
+                            {{ cve["cve_id"] }}
+                        </div>
 
-                    <td>
-                        <a
-                            class="btn btn-sm btn-outline-primary"
-                            href="{{ cve['source_url'] }}"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                        >
-                            NVD
-                        </a>
-                    </td>
-                </tr>
+                        <div class="cve-meta">
+
+                            <span>
+                                CVSS
+                                <strong>
+                                    {{ cve["cvss_score"] if cve["cvss_score"] is not none else "N/A" }}
+                                </strong>
+                            </span>
+
+                            <span
+                                class="
+                                    severity-badge
+                                    severity-{{ cve['severity']|lower }}
+                                "
+                            >
+                                {{ cve["severity"] }}
+                            </span>
+
+                            {% if cve["known_exploited"] is sameas true %}
+
+                            <span class="kev-badge">
+                                CISA KEV
+                            </span>
+
+                            {% elif cve["known_exploited"] is sameas false %}
+
+                            <span class="not-kev-badge">
+                                No KEV Match
+                            </span>
+
+                            {% else %}
+
+                            <span class="unknown-badge">
+                                KEV Unknown
+                            </span>
+
+                            {% endif %}
+
+                        </div>
+
+                    </div>
+
+                    <a
+                        href="{{ cve['source_url'] }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="btn btn-sm btn-outline-primary"
+                    >
+                        View NVD
+                    </a>
+
+                </div>
+
+
+                <p class="cve-description">
+                    {{ cve["description"] }}
+                </p>
+
+
                 {% if cve["kev"] %}
-                <tr class="table-danger">
-                    <td colspan="7">
-                        <strong>
-                            CISA KEV Match
-                        </strong>
 
-                        <div class="mt-2">
-                            <strong>Vendor:</strong>
-                            {{ cve["kev"]["vendor_project"] }}
+                <div class="kev-panel">
+
+                    <div class="kev-panel-header">
+                        Confirmed CISA KEV Match
+                    </div>
+
+                    <div class="kev-grid">
+
+                        <div>
+                            <span>Vendor</span>
+                            <strong>
+                                {{ cve["kev"]["vendor_project"] }}
+                            </strong>
                         </div>
 
                         <div>
-                            <strong>Product:</strong>
-                            {{ cve["kev"]["product"] }}
+                            <span>Product</span>
+                            <strong>
+                                {{ cve["kev"]["product"] }}
+                            </strong>
                         </div>
 
                         <div>
-                            <strong>Vulnerability:</strong>
-                            {{ cve["kev"]["vulnerability_name"] }}
+                            <span>Date Added</span>
+                            <strong>
+                                {{ cve["kev"]["date_added"] }}
+                            </strong>
                         </div>
 
                         <div>
-                            <strong>Date Added:</strong>
-                            {{ cve["kev"]["date_added"] }}
+                            <span>Ransomware Use</span>
+                            <strong>
+                                {{ cve["kev"]["known_ransomware_use"] }}
+                            </strong>
                         </div>
 
-                        <div>
-                            <strong>Required Action:</strong>
+                    </div>
+
+
+                    {% if cve["kev"]["required_action"] %}
+
+                    <div class="kev-action">
+
+                        <span>
+                            Required Action
+                        </span>
+
+                        <p>
                             {{ cve["kev"]["required_action"] }}
-                        </div>
+                        </p>
 
-                        <div>
-                            <strong>Due Date:</strong>
-                            {{ cve["kev"]["due_date"] }}
-                        </div>
+                    </div>
 
-                        <div>
-                            <strong>Known Ransomware Use:</strong>
-                            {{ cve["kev"]["known_ransomware_use"] }}
-                        </div>
+                    {% endif %}
 
-                        {% if cve["kev"]["cwes"] %}
-                        <div>
-                            <strong>CWEs:</strong>
-                            {{ cve["kev"]["cwes"]|join(", ") }}
-                        </div>
-                        {% endif %}
-                    </td>
-                </tr>
+                </div>
+
                 {% endif %}
 
+            </div>
 
-                {% endfor %}
-                </tbody>
-            </table>
+            {% endfor %}
+
         </div>
-
-        {% elif assessment["cve_search_term"] %}
-        <p class="mb-0">
-            No CVEs were returned for the supplied keyword.
-        </p>
 
         {% else %}
-        <p class="mb-0">
-            No CVE search term was supplied.
-        </p>
+
+        <div class="empty-state">
+            No CVE candidates were returned.
+        </div>
+
         {% endif %}
-    </div>
-</div>
+
+    </section>
 
 
-    <div class="card mt-4">
-        <div class="card-header">
-            <strong>
-                AI-Assisted Security Analysis
-            </strong>
+    <section class="result-section">
+
+        <div class="result-section-header">
+
+            <div>
+                <div class="section-label">
+                    ADVERSARY CONTEXT
+                </div>
+
+                <h2>
+                    MITRE ATT&amp;CK Mapping
+                </h2>
+            </div>
+
         </div>
 
-        <div class="card-body">
-            {% if assessment["ai_analysis"] %}
-            <div class="ai-output">
-                {{ assessment["ai_analysis"] }}
-            </div>
-            {% else %}
-            <div class="alert alert-warning mb-0">
-                AI analysis was unavailable. The deterministic
-                rule-based score and recommendations remain valid.
-            </div>
-            {% endif %}
+        <div class="intel-callout">
+            ATT&amp;CK mappings identify techniques that may be relevant
+            to the observed security conditions. They do not indicate
+            confirmed malicious activity.
         </div>
+
+
+        {% if mitre_results %}
+
+        <div class="mitre-result-grid">
+
+            {% for technique in mitre_results %}
+
+            <div class="mitre-result-card">
+
+                <div class="mitre-result-top">
+
+                    <span class="mitre-technique-id">
+                        {{ technique["technique_id"] }}
+                    </span>
+
+                    <a
+                        href="{{ technique['source_url'] }}"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="mitre-link"
+                    >
+                        MITRE
+                    </a>
+
+                </div>
+
+                <h3>
+                    {{ technique["name"] }}
+                </h3>
+
+                <div class="mitre-tactic">
+                    {{ technique["tactic"] }}
+                </div>
+
+                <p>
+                    {{ technique["reason"] }}
+                </p>
+
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            No ATT&amp;CK mappings were generated.
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <section class="result-section ai-result-section">
+
+        <div class="result-section-header">
+
+            <div>
+                <div class="section-label">
+                    AI DECISION SUPPORT
+                </div>
+
+                <h2>
+                    AI-Assisted Security Analysis
+                </h2>
+            </div>
+
+        </div>
+
+        <p class="section-description">
+            Generated after deterministic scoring. The AI does not
+            modify the calculated cybersecurity risk score.
+        </p>
+
+
+        {% if assessment["ai_analysis"] %}
+
+        <div class="ai-analysis-card">
+            {{ assessment["ai_analysis"] }}
+        </div>
+
+        {% else %}
+
+        <div class="empty-state">
+            AI-assisted analysis was unavailable for this assessment.
+        </div>
+
+        {% endif %}
+
+    </section>
+
+
+    <div class="result-footer-actions">
+
+        <a
+            href="{{ url_for('history') }}"
+            class="btn btn-outline-secondary"
+        >
+            Assessment History
+        </a>
+
+        <a
+            href="{{ url_for('report', assessment_id=assessment['id']) }}"
+            class="btn btn-outline-primary"
+            target="_blank"
+        >
+            Open Printable Report
+        </a>
+
+        <a
+            href="{{ url_for('assessment') }}"
+            class="btn btn-primary"
+        >
+            Start New Assessment
+        </a>
+
     </div>
 
-<div class="alert alert-secondary mt-4">
-    This score was generated by an educational rule-based model.
-    It is not a regulatory audit, penetration test, clinical
-    determination, vulnerability scan, or HIPAA certification.
 </div>
 
-<div class="d-flex flex-wrap gap-2">
-    <a
-        class="btn btn-primary"
-        href="{{ url_for(
-            'report',
-            assessment_id=assessment['id']
-        ) }}"
-    >
-        Open Printable Report
-    </a>
-
-    <a
-        class="btn btn-outline-primary"
-        href="{{ url_for('assessment') }}"
-    >
-        New Assessment
-    </a>
-
-    <a
-        class="btn btn-outline-secondary"
-        href="{{ url_for('history') }}"
-    >
-        View History
-    </a>
-</div>
 {% endblock %}

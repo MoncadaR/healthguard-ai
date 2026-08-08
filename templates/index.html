@@ -1,158 +1,579 @@
 {% extends "base.html" %}
 
 {% block title %}
-Dashboard | HealthGuard AI
+HealthGuard AI Dashboard
 {% endblock %}
 
 {% block content %}
-<section class="p-5 bg-light rounded-3 mb-5">
-    <h1 class="display-5 fw-bold">
-        HealthGuard AI
-    </h1>
 
-    <p class="lead">
-        AI-assisted medical-device cybersecurity risk assessment.
-    </p>
+<div class="dashboard-page">
 
-    <p>
-        Document device security controls, calculate a structured
-        risk score, and generate prioritized recommendations.
-    </p>
+    <section class="dashboard-hero">
 
-    <a
-        class="btn btn-primary btn-lg"
-        href="{{ url_for('assessment') }}"
-    >
-        Start Assessment
-    </a>
-</section>
+        <div class="dashboard-hero-content">
 
-<div class="row g-3 mb-5">
-    <div class="col-md-3">
-        <div class="card dashboard-card h-100">
-            <div class="card-body">
-                <p class="text-muted mb-1">
-                    Total Assessments
-                </p>
-
-                <h2>
-                    {{ summary["total"] or 0 }}
-                </h2>
+            <div class="eyebrow">
+                MEDICAL DEVICE CYBERSECURITY
             </div>
-        </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card dashboard-card h-100">
-            <div class="card-body">
-                <p class="text-muted mb-1">
-                    Critical Risk
-                </p>
+            <h1>
+                HealthGuard AI
+            </h1>
 
-                <h2>
-                    {{ summary["critical"] or 0 }}
-                </h2>
+            <p class="dashboard-hero-subtitle">
+                AI-assisted cybersecurity risk assessment for
+                connected medical devices and healthcare technology.
+            </p>
+
+            <div class="dashboard-capabilities">
+                <span>Deterministic Risk Scoring</span>
+                <span>NVD Intelligence</span>
+                <span>CISA KEV</span>
+                <span>MITRE ATT&amp;CK</span>
+                <span>AI Analysis</span>
             </div>
+
         </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card dashboard-card h-100">
-            <div class="card-body">
-                <p class="text-muted mb-1">
-                    High Risk
-                </p>
 
-                <h2>
-                    {{ summary["high"] or 0 }}
-                </h2>
+        <div class="dashboard-hero-actions">
+
+            <a
+                href="{{ url_for('assessment') }}"
+                class="btn btn-primary btn-lg"
+            >
+                Start New Assessment
+            </a>
+
+            <a
+                href="{{ url_for('history') }}"
+                class="btn btn-outline-secondary btn-lg"
+            >
+                Assessment History
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <section class="dashboard-metrics">
+
+        <div class="dashboard-metric-card">
+
+            <div class="metric-heading">
+                Total Assessments
             </div>
-        </div>
-    </div>
 
-    <div class="col-md-3">
-        <div class="card dashboard-card h-100">
-            <div class="card-body">
-                <p class="text-muted mb-1">
-                    Average Score
-                </p>
-
-                <h2>
-                    {{ summary["average_score"] or 0 }}
-                </h2>
+            <div class="metric-value">
+                {{ summary["total"] or 0 }}
             </div>
+
+            <div class="metric-description">
+                Completed device assessments
+            </div>
+
         </div>
-    </div>
-</div>
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>
-        Recent Assessments
-    </h2>
 
-    <a href="{{ url_for('history') }}">
-        View all
-    </a>
-</div>
+        <div class="dashboard-metric-card metric-critical">
 
-{% if recent %}
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead>
-        <tr>
-            <th>Device</th>
-            <th>Manufacturer</th>
-            <th>Score</th>
-            <th>Risk</th>
-            <th>Date</th>
-            <th></th>
-        </tr>
-        </thead>
+            <div class="metric-heading">
+                Critical Risk
+            </div>
 
-        <tbody>
-        {% for item in recent %}
-        <tr>
-            <td>
-                {{ item["device_name"] }}
-            </td>
+            <div class="metric-value">
+                {{ summary["critical"] or 0 }}
+            </div>
 
-            <td>
-                {{ item["manufacturer"] or "Not provided" }}
-            </td>
+            <div class="metric-description">
+                Assessments requiring immediate attention
+            </div>
 
-            <td>
-                {{ item["risk_score"] }}/100
-            </td>
+        </div>
 
-            <td>
-                <span class="badge risk-{{ item['risk_level']|lower }}">
-                    {{ item["risk_level"] }}
-                </span>
-            </td>
 
-            <td>
-                {{ item["created_at"] }}
-            </td>
+        <div class="dashboard-metric-card metric-high">
 
-            <td>
+            <div class="metric-heading">
+                High Risk
+            </div>
+
+            <div class="metric-value">
+                {{ summary["high"] or 0 }}
+            </div>
+
+            <div class="metric-description">
+                Assessments with elevated exposure
+            </div>
+
+        </div>
+
+
+        <div class="dashboard-metric-card">
+
+            <div class="metric-heading">
+                Average Risk Score
+            </div>
+
+            <div class="metric-value">
+                {{ summary["average_score"] or 0 }}
+                <span>/100</span>
+            </div>
+
+            <div class="metric-description">
+                Across all completed assessments
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <div class="dashboard-grid">
+
+        <section class="dashboard-panel recent-panel">
+
+            <div class="dashboard-panel-header">
+
+                <div>
+                    <div class="section-label">
+                        ACTIVITY
+                    </div>
+
+                    <h2>
+                        Recent Assessments
+                    </h2>
+                </div>
+
                 <a
-                    class="btn btn-sm btn-outline-primary"
-                    href="{{ url_for(
-                        'view_result',
-                        assessment_id=item['id']
-                    ) }}"
+                    href="{{ url_for('history') }}"
+                    class="panel-link"
                 >
-                    View
+                    View all
                 </a>
-            </td>
-        </tr>
-        {% endfor %}
-        </tbody>
-    </table>
+
+            </div>
+
+
+            {% if recent %}
+
+            <div class="recent-list">
+
+                {% for item in recent %}
+
+                <a
+                    href="{{ url_for('view_result', assessment_id=item['id']) }}"
+                    class="recent-assessment"
+                >
+
+                    <div class="recent-device">
+
+                        <div class="recent-device-name">
+                            {{ item["device_name"] }}
+                        </div>
+
+                        <div class="recent-device-meta">
+
+                            {% if item["manufacturer"] %}
+                                {{ item["manufacturer"] }}
+                            {% else %}
+                                Manufacturer not specified
+                            {% endif %}
+
+                            <span>•</span>
+
+                            {{ item["created_at"] }}
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="recent-risk">
+
+                        <div class="recent-score">
+                            {{ item["risk_score"] }}
+                        </div>
+
+                        <span
+                            class="
+                                risk-pill
+                                risk-pill-{{ item['risk_level']|lower }}
+                            "
+                        >
+                            {{ item["risk_level"] }}
+                        </span>
+
+                    </div>
+
+                </a>
+
+                {% endfor %}
+
+            </div>
+
+            {% else %}
+
+            <div class="dashboard-empty-state">
+
+                <div class="empty-state-title">
+                    No assessments yet
+                </div>
+
+                <p>
+                    Start your first medical device cybersecurity
+                    assessment to populate the dashboard.
+                </p>
+
+                <a
+                    href="{{ url_for('assessment') }}"
+                    class="btn btn-primary"
+                >
+                    Start Assessment
+                </a>
+
+            </div>
+
+            {% endif %}
+
+        </section>
+
+
+        <aside class="dashboard-side">
+
+            <section class="dashboard-panel">
+
+                <div class="dashboard-panel-header">
+
+                    <div>
+                        <div class="section-label">
+                            PLATFORM
+                        </div>
+
+                        <h2>
+                            Intelligence Pipeline
+                        </h2>
+                    </div>
+
+                </div>
+
+
+                <div class="pipeline-list">
+
+                    <div class="pipeline-item">
+
+                        <div class="pipeline-number">
+                            01
+                        </div>
+
+                        <div>
+                            <strong>
+                                Risk Engine
+                            </strong>
+
+                            <span>
+                                Deterministic Python scoring
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="pipeline-line"></div>
+
+
+                    <div class="pipeline-item">
+
+                        <div class="pipeline-number">
+                            02
+                        </div>
+
+                        <div>
+                            <strong>
+                                NVD
+                            </strong>
+
+                            <span>
+                                Candidate CVE intelligence
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="pipeline-line"></div>
+
+
+                    <div class="pipeline-item">
+
+                        <div class="pipeline-number">
+                            03
+                        </div>
+
+                        <div>
+                            <strong>
+                                CISA KEV
+                            </strong>
+
+                            <span>
+                                Known exploitation context
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="pipeline-line"></div>
+
+
+                    <div class="pipeline-item">
+
+                        <div class="pipeline-number">
+                            04
+                        </div>
+
+                        <div>
+                            <strong>
+                                MITRE ATT&amp;CK
+                            </strong>
+
+                            <span>
+                                Adversary technique mapping
+                            </span>
+                        </div>
+
+                    </div>
+
+
+                    <div class="pipeline-line"></div>
+
+
+                    <div class="pipeline-item">
+
+                        <div class="pipeline-number">
+                            05
+                        </div>
+
+                        <div>
+                            <strong>
+                                AI Analysis
+                            </strong>
+
+                            <span>
+                                Executive security explanation
+                            </span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+            <section class="dashboard-panel dashboard-design-card">
+
+                <div class="section-label">
+                    DESIGN PRINCIPLE
+                </div>
+
+                <h2>
+                    Deterministic First
+                </h2>
+
+                <p>
+                    HealthGuard AI calculates risk using
+                    reproducible Python security logic.
+                    Generative AI explains the assessment
+                    but does not determine the numerical score.
+                </p>
+
+                <div class="design-formula">
+
+                    <span>
+                        Python
+                    </span>
+
+                    <strong>
+                        =
+                    </strong>
+
+                    <span>
+                        Decision Logic
+                    </span>
+
+                </div>
+
+                <div class="design-formula">
+
+                    <span>
+                        AI
+                    </span>
+
+                    <strong>
+                        =
+                    </strong>
+
+                    <span>
+                        Explanation
+                    </span>
+
+                </div>
+
+            </section>
+
+        </aside>
+
+    </div>
+
+
+    <section class="dashboard-features">
+
+        <div class="dashboard-panel-header">
+
+            <div>
+
+                <div class="section-label">
+                    CAPABILITIES
+                </div>
+
+                <h2>
+                    Security Intelligence at a Glance
+                </h2>
+
+            </div>
+
+        </div>
+
+
+        <div class="feature-grid">
+
+            <div class="feature-card">
+
+                <div class="feature-code">
+                    01
+                </div>
+
+                <h3>
+                    Risk Assessment
+                </h3>
+
+                <p>
+                    Evaluate network exposure, authentication,
+                    encryption, lifecycle, logging, patching,
+                    segmentation, and recovery controls.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-code">
+                    02
+                </div>
+
+                <h3>
+                    Vulnerability Intelligence
+                </h3>
+
+                <p>
+                    Retrieve NVD CVE candidates and analyze
+                    CVSS severity information.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-code">
+                    03
+                </div>
+
+                <h3>
+                    Exploitation Context
+                </h3>
+
+                <p>
+                    Enrich candidate CVEs using the CISA Known
+                    Exploited Vulnerabilities catalog.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-code">
+                    04
+                </div>
+
+                <h3>
+                    ATT&amp;CK Mapping
+                </h3>
+
+                <p>
+                    Associate relevant security conditions with
+                    potential MITRE ATT&amp;CK techniques.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-code">
+                    05
+                </div>
+
+                <h3>
+                    AI Decision Support
+                </h3>
+
+                <p>
+                    Generate executive summaries, risk explanations,
+                    and prioritized remediation recommendations.
+                </p>
+
+            </div>
+
+
+            <div class="feature-card">
+
+                <div class="feature-code">
+                    06
+                </div>
+
+                <h3>
+                    Security Reporting
+                </h3>
+
+                <p>
+                    Preserve assessment history and generate
+                    structured printable security reports.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <div class="dashboard-notice">
+
+        <strong>
+            Educational Prototype
+        </strong>
+
+        HealthGuard AI provides cybersecurity decision support and
+        does not replace vulnerability scanning, penetration testing,
+        clinical engineering review, or regulatory compliance assessment.
+
+    </div>
+
 </div>
-{% else %}
-<div class="alert alert-secondary">
-    No assessments have been saved yet.
-</div>
-{% endif %}
+
 {% endblock %}

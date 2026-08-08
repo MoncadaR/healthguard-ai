@@ -13,6 +13,7 @@ from flask import (
     url_for,
 )
 
+from mitre_service import map_assessment_to_mitre
 from ai_service import generate_ai_analysis
 from database import get_db, init_app, init_db
 from kev_service import (
@@ -290,6 +291,14 @@ def assessment():
     result = calculate_risk(
         device_data
     )
+    mitre_records = map_assessment_to_mitre(
+    device_data
+)
+
+    mitre_results = [
+    record.to_dict()
+    for record in mitre_records
+]
 
     cve_records = []
     cve_results = []
@@ -412,6 +421,7 @@ def assessment():
             cve_results,
             cve_lookup_error,
             kev_lookup_error,
+            mitre_results,
 
             network_connected,
             internet_access,
@@ -445,7 +455,7 @@ def assessment():
 
         VALUES (
             ?, ?, ?, ?, ?, ?, ?,
-            ?, ?, ?, ?,
+            ?, ?, ?, ?, ?,
             ?, ?, ?,
             ?, ?, ?,
             ?, ?, ?,
@@ -468,6 +478,7 @@ def assessment():
             json.dumps(cve_results),
             cve_lookup_error,
             kev_lookup_error,
+            json.dumps(mitre_results),
 
             device_data["network_connected"],
             device_data["internet_access"],
@@ -553,6 +564,9 @@ def view_result(
         cve_results=deserialize_json_list(
             assessment_record["cve_results"]
         ),
+        mitre_results=deserialize_json_list(
+        assessment_record["mitre_results"]
+        ),
     )
 
 
@@ -610,6 +624,9 @@ def report(
         ),
         cve_results=deserialize_json_list(
             assessment_record["cve_results"]
+        ),
+        mitre_results=deserialize_json_list(
+        assessment_record["mitre_results"]
         ),
     )
 

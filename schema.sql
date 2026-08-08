@@ -14,7 +14,7 @@ CREATE TABLE assessments (
     cve_results TEXT NOT NULL DEFAULT '[]',
     cve_lookup_error TEXT,
     kev_lookup_error TEXT,
-
+    mitre_results TEXT NOT NULL DEFAULT '[]',
     network_connected INTEGER NOT NULL DEFAULT 0,
     internet_access INTEGER NOT NULL DEFAULT 0,
     wireless_enabled INTEGER NOT NULL DEFAULT 0,
