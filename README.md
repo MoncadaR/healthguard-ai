@@ -1,353 +1,980 @@
+<div align="center">
+
 # 🏥 HealthGuard AI
+
 ### AI-Powered Medical Device Cybersecurity Risk Assessment Platform
 
-HealthGuard AI is an AI-assisted cybersecurity decision-support platform designed to help healthcare technology professionals assess the security posture of network-connected medical devices.
+**Deterministic Risk Scoring · Vulnerability Intelligence · Threat Prioritization · MITRE ATT&CK · Generative AI**
 
-The application combines a deterministic Python risk-scoring engine with Generative AI to produce structured cybersecurity assessments, identify security weaknesses, and generate executive-ready recommendations.
+<br>
 
-> **Disclaimer**
->
-> This project is an educational prototype developed for research and academic purposes. It is **not** intended to replace professional cybersecurity assessments, regulatory audits, clinical engineering evaluations, or HIPAA compliance reviews.
+![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?logo=python&logoColor=white)
+![Flask](https://img.shields.io/badge/Flask-Web_Framework-000000?logo=flask&logoColor=white)
+![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?logo=sqlite&logoColor=white)
+![OpenAI](https://img.shields.io/badge/OpenAI-AI_Analysis-412991?logo=openai&logoColor=white)
+![NVD](https://img.shields.io/badge/NVD-CVE_Intelligence-003366)
+![CISA](https://img.shields.io/badge/CISA-KEV-005EA8)
+![MITRE ATT&CK](https://img.shields.io/badge/MITRE-ATT%26CK-CC0000)
+![Pytest](https://img.shields.io/badge/Tests-Pytest-0A9EDC?logo=pytest&logoColor=white)
+
+<br>
+
+**Healthcare Cybersecurity · Medical Device Security · Threat Intelligence · AI-Assisted Risk Analysis**
+
+</div>
 
 ---
 
-# Features
+## Overview
 
-### Medical Device Risk Assessment
+**HealthGuard AI** is an AI-assisted cybersecurity decision-support platform designed to help healthcare technology professionals assess the security posture of network-connected medical devices and healthcare technology assets.
 
-Evaluate the cybersecurity posture of medical devices by documenting:
+The platform combines a **deterministic Python risk-scoring engine** with vulnerability intelligence, known-exploitation data, MITRE ATT&CK technique mapping, and Generative AI.
 
-- Device information
+Instead of allowing AI to determine the security score, HealthGuard AI separates deterministic cybersecurity logic from AI-generated explanation.
+
+```text
+Security Controls
+       ↓
+Deterministic Risk Score
+       ↓
+Vulnerability Intelligence
+       ↓
+Known Exploitation Analysis
+       ↓
+MITRE ATT&CK Mapping
+       ↓
+AI-Assisted Security Analysis
+```
+
+> [!IMPORTANT]
+> HealthGuard AI is an educational prototype developed for academic, research, and portfolio purposes. It is not a vulnerability scanner, penetration-testing platform, regulatory audit tool, clinical safety system, or HIPAA compliance certification platform.
+
+---
+
+# Core Capabilities
+
+| Capability | Description |
+|---|---|
+| **Medical Device Risk Assessment** | Evaluates technical and operational security conditions |
+| **Deterministic Risk Engine** | Calculates reproducible risk scores without AI involvement |
+| **NVD CVE Intelligence** | Retrieves CVE candidates from the National Vulnerability Database |
+| **CISA KEV Intelligence** | Identifies vulnerabilities with confirmed exploitation evidence |
+| **Ransomware Context** | Displays known ransomware campaign usage from KEV |
+| **MITRE ATT&CK Mapping** | Maps identified exposure conditions to adversary techniques |
+| **AI-Assisted Analysis** | Generates structured explanations and remediation recommendations |
+| **Assessment History** | Stores previous assessments using SQLite |
+| **Printable Reports** | Produces browser-printable cybersecurity assessment reports |
+| **Automated Testing** | Validates core functionality using Pytest |
+
+---
+
+# Risk Assessment
+
+HealthGuard AI evaluates security conditions including:
+
+<table>
+<tr>
+<td width="50%">
+
+### Device & Lifecycle
+
+- Device type
+- Manufacturer
+- Model
 - Operating system
-- Network connectivity
-- Remote access
-- Authentication controls
-- Encryption
+- Support status
+- End-of-life status
 - Patch management
-- Logging
-- Lifecycle status
-- Backup and recovery
+- Endpoint protection
+
+</td>
+<td width="50%">
+
+### Access & Network Security
+
+- Network connectivity
+- Internet exposure
+- Wireless connectivity
+- Vendor remote access
+- Multifactor authentication
+- Network segmentation
+- Unique user accounts
+- Default credentials
+
+</td>
+</tr>
+
+<tr>
+<td width="50%">
+
+### Data Protection
+
+- Encryption in transit
+- Encryption at rest
+- Patient-data storage considerations
+
+</td>
+<td width="50%">
+
+### Monitoring & Recovery
+
+- Audit logging
+- Backup availability
+- Recovery capability
+- Security maintenance processes
+
+</td>
+</tr>
+</table>
 
 ---
 
-### Deterministic Risk Engine
+# Deterministic Risk Engine
 
-Unlike traditional AI-only systems, HealthGuard AI does **not** allow the language model to determine risk scores.
+The numerical risk score is calculated entirely by Python-based security rules.
 
-Risk levels are calculated using a reproducible Python rule engine based on cybersecurity best practices.
+**Generative AI does not determine or modify the score.**
 
-Risk Levels
+| Score | Classification |
+|---:|:---|
+| **0–24** | Low |
+| **25–49** | Medium |
+| **50–74** | High |
+| **75–100** | Critical |
 
-- 🟢 Low
-- 🟡 Medium
-- 🟠 High
-- 🔴 Critical
+This design provides:
 
----
+- Reproducibility
+- Explainability
+- Consistent scoring
+- Separation between security logic and AI interpretation
 
-### AI-Assisted Analysis
-
-After the risk score is calculated, OpenAI generates:
-
-- Executive Summary
-- Primary Cybersecurity Risks
-- Patient Safety Considerations
-- HIPAA Security Considerations
-- Immediate Priority Actions
-- Long-Term Recommendations
-- Limitations and Assumptions
-
-The AI explains the assessment rather than replacing the scoring methodology.
+> [!NOTE]
+> The scoring methodology is educational and is not an official scoring system published by NIST, FDA, HHS, CISA, or another regulatory authority.
 
 ---
 
-### Assessment History
+# NVD CVE Intelligence
 
-HealthGuard AI stores assessments locally using SQLite.
+HealthGuard AI integrates with the **NIST National Vulnerability Database** to retrieve potentially relevant CVEs.
 
-Users can review previous evaluations and generate printable reports.
+Example search terms:
+
+```text
+Apache Log4j
+Microsoft Windows 7
+OpenSSL
+VMware ESXi
+Apache HTTP Server
+```
+
+For each candidate vulnerability, HealthGuard AI can display:
+
+| Field | Example |
+|---|---|
+| CVE | `CVE-2021-44228` |
+| CVSS | `10.0` |
+| Severity | `CRITICAL` |
+| Description | NVD vulnerability description |
+| Vector | CVSS vector |
+| Source | Direct NVD reference |
+
+> [!WARNING]
+> The current NVD implementation uses keyword-based searching. A returned CVE does **not** prove that a specific medical device, software version, or configuration is affected.
+
+Results should therefore be interpreted as **CVE candidates requiring validation**.
 
 ---
 
-### Printable Reports
+# CISA Known Exploited Vulnerabilities
 
-Each assessment includes:
+CVE candidates are automatically checked against the **CISA Known Exploited Vulnerabilities (KEV) Catalog**.
 
-- Device Information
-- Risk Score
-- Findings
-- Recommendations
-- Positive Security Controls
-- AI Security Analysis
+This provides an additional layer of threat prioritization beyond CVSS severity.
 
-Reports can be exported as PDF directly from the browser.
+### Example
+
+```text
+CVE-2021-44228
+
+CVSS                    10.0
+Severity                CRITICAL
+Known Exploited         YES
+Ransomware Use          KNOWN
+Vendor                  Apache
+Product                 Log4j2
+```
+
+For KEV matches, HealthGuard AI can display:
+
+- Vendor
+- Product
+- Vulnerability name
+- Date added to KEV
+- Required remediation action
+- CISA due date
+- Known ransomware campaign use
+- CWE identifiers
+
+### Why KEV Matters
+
+```text
+High CVSS
+   ≠
+Confirmed exploitation
+
+High CVSS
+   +
+CISA KEV Match
+   =
+Higher operational priority
+```
 
 ---
 
-### Automated Testing
+# MITRE ATT&CK Mapping
 
-The project includes automated tests using Pytest covering:
+HealthGuard AI maps selected exposure conditions to potentially relevant MITRE ATT&CK techniques.
 
-- Risk engine validation
-- Flask application routes
-- Input validation
-- Security logic
-- Risk scoring consistency
+| Security Condition | Technique | ATT&CK ID |
+|---|---|---|
+| Default credentials | Default Accounts | `T1078.001` |
+| Weak account controls | Valid Accounts | `T1078` |
+| Vendor remote access | External Remote Services | `T1133` |
+| Remote administration | Remote Services | `T1021` |
+| Internet exposure | Exploit Public-Facing Application | `T1190` |
+
+Each mapping includes:
+
+- Technique ID
+- Technique name
+- ATT&CK tactic
+- Explanation of relevance
+- Direct MITRE reference
+
+> [!CAUTION]
+> MITRE mappings represent techniques that **could be relevant** to the identified security conditions. They do not indicate that an adversary, compromise, or attack was actually observed.
+
+---
+
+# AI-Assisted Security Analysis
+
+After deterministic scoring and intelligence enrichment are completed, HealthGuard AI uses the OpenAI API to produce structured decision-support analysis.
+
+The AI can generate:
+
+```text
+Executive Summary
+
+Primary Cybersecurity Risks
+
+Patient-Safety and Operational Considerations
+
+HIPAA Security Considerations
+
+Immediate Priority Actions
+
+Long-Term Recommendations
+
+Limitations and Assumptions
+```
+
+### AI Guardrails
+
+The model is instructed not to:
+
+- Modify the deterministic score
+- Invent CVEs
+- Invent affected versions
+- Invent manufacturer claims
+- Invent vulnerabilities
+- Make unsupported regulatory findings
+- Declare HIPAA compliance
+- Make legal conclusions
+- Invent clinical facts
+
+The result is a hybrid architecture:
+
+```text
+Python = Decision Logic
+AI     = Explanation
+```
 
 ---
 
 # System Architecture
 
-```
-                    User
-                      │
-                      ▼
-        Medical Device Assessment Form
-                      │
-                      ▼
-                Flask Application
-                      │
-        ┌─────────────┴─────────────┐
-        │                           │
-        ▼                           ▼
- Risk Scoring Engine          SQLite Database
-        │
-        ▼
- Structured Security Findings
-        │
-        ▼
-      OpenAI API
-        │
-        ▼
- AI Security Assessment
-        │
-        ▼
- Dashboard • Reports • History
-```
+```mermaid
+flowchart TB
 
----
+    subgraph USER["User Layer"]
+        U[Security Analyst / Healthcare Technology Professional]
+    end
+
+    subgraph PRESENTATION["Presentation Layer"]
+        FORM[Medical Device Assessment Form]
+        DASH[Dashboard]
+        HIST[Assessment History]
+        REP[Printable Security Report]
+    end
+
+    subgraph APPLICATION["Application Layer"]
+        FLASK[Flask Application]
+        VALID[Input Validation]
+        ORCH[Assessment Orchestration]
+    end
+
+    subgraph ANALYSIS["Security Analysis Layer"]
+        RISK[Deterministic Risk Engine]
+        MITRE[MITRE ATT&CK Mapper]
+    end
+
+    subgraph INTEL["Threat Intelligence Layer"]
+        NVD[NIST NVD API]
+        CVE[Candidate CVEs]
+        KEV[CISA KEV Catalog]
+        ENRICH[Exploitation Intelligence]
+    end
+
+    subgraph AI_LAYER["AI Layer"]
+        OPENAI[OpenAI API]
+        AIANALYSIS[AI-Assisted Security Analysis]
+    end
+
+    subgraph DATA["Data Layer"]
+        SQLITE[(SQLite Database)]
+    end
+
+    U --> FORM
+
+    FORM --> FLASK
+    FLASK --> VALID
+    VALID --> ORCH
+
+    ORCH --> RISK
+    ORCH --> MITRE
+    ORCH --> NVD
+
+    NVD --> CVE
+    CVE --> KEV
+    KEV --> ENRICH
+
+    RISK --> ORCH
+    MITRE --> ORCH
+    ENRICH --> ORCH
+
+    ORCH --> OPENAI
+    OPENAI --> AIANALYSIS
+    AIANALYSIS --> ORCH
+
+    ORCH --> SQLITE
+
+    SQLITE --> DASH
+    SQLITE --> HIST
+    SQLITE --> REP
+
+    ORCH --> DASH
+    ORCH --> REP
+```
+### Architecture Design
+
+HealthGuard AI separates deterministic security logic from external threat intelligence and generative AI.
+
+The Flask application orchestrates the workflow while preserving clear responsibility boundaries:
+
+1. **Presentation Layer** – captures assessment data and displays results.
+2. **Application Layer** – validates input and coordinates the workflow.
+3. **Security Analysis Layer** – calculates deterministic risk and maps ATT&CK techniques.
+4. **Threat Intelligence Layer** – enriches assessments using NVD and CISA KEV.
+5. **AI Layer** – generates explanatory analysis without modifying the numerical score.
+6. **Data Layer** – stores assessment history and generated results in SQLite.
 
 # Technology Stack
 
-| Technology | Purpose |
-|------------|---------|
-| Python | Backend Development |
-| Flask | Web Framework |
-| SQLite | Local Database |
-| OpenAI API | AI Security Analysis |
-| HTML5 | User Interface |
-| Bootstrap 5 | Responsive Design |
-| CSS | Styling |
-| Jinja2 | Dynamic Templates |
-| Pytest | Automated Testing |
-| Git | Version Control |
-| GitHub | Repository Hosting |
+| Layer | Technology |
+|---|---|
+| **Language** | Python |
+| **Web Framework** | Flask |
+| **Database** | SQLite |
+| **AI** | OpenAI API |
+| **Vulnerability Intelligence** | NIST NVD API |
+| **Exploitation Intelligence** | CISA KEV |
+| **Adversary Framework** | MITRE ATT&CK |
+| **HTTP Client** | Requests |
+| **Templates** | Jinja2 |
+| **Frontend** | HTML5 / Bootstrap 5 / CSS |
+| **Testing** | Pytest |
+| **Version Control** | Git |
+| **Repository** | GitHub |
 
 ---
 
-# Risk Assessment Methodology
+# Security Intelligence Workflow
 
-The application evaluates security across several domains including:
+The security intelligence pipeline enriches the deterministic assessment with vulnerability, exploitation, and adversary-technique context before the final report is generated.
 
-- Software lifecycle
-- Operating system support
-- Internet exposure
-- Vendor remote access
-- Multifactor authentication
-- Encryption at rest
-- Encryption in transit
-- Network segmentation
-- Unique user accounts
-- Default credentials
-- Audit logging
-- Patch management
-- Backup and recovery
-- End-of-life status
+```mermaid
+flowchart TD
 
-The rule engine assigns a deterministic score between **0 and 100**, ensuring reproducibility across assessments.
+    START([Assessment Submitted])
 
----
+    VALIDATE[Validate Device & Security Data]
 
-# AI Safety
+    RISK[Calculate Deterministic Risk Score]
 
-HealthGuard AI uses AI only after deterministic scoring has completed.
+    FINDINGS[Generate Security Findings & Recommendations]
 
-The model is instructed to:
+    MITRE[Map Security Conditions to MITRE ATT&CK]
 
-- Explain the calculated score
-- Summarize findings
-- Recommend mitigations
-- Avoid hallucinating vulnerabilities
-- Avoid inventing CVEs
-- Avoid making legal or regulatory claims
-- Avoid declaring HIPAA compliance
+    SEARCH{CVE Search Term Provided?}
 
----
+    NVD[Query NIST NVD API]
+
+    CVES[Retrieve Candidate CVEs]
+
+    FOUND{Candidate CVEs Found?}
+
+    KEV[Compare CVEs Against CISA KEV]
+
+    EXPLOITED{KEV Match?}
+
+    KEVYES[Add Known Exploitation Context]
+
+    KEVNO[Record No Current KEV Match]
+
+    CONTEXT[Build Structured Security Context]
+
+    AI{OpenAI Available?}
+
+    ANALYSIS[Generate AI-Assisted Security Analysis]
+
+    FALLBACK[Continue With Deterministic Analysis]
+
+    STORE[(Store Assessment in SQLite)]
+
+    RESULT[Display Assessment Results]
+
+    REPORT[Generate Printable Security Report]
+
+    START --> VALIDATE
+    VALIDATE --> RISK
+    RISK --> FINDINGS
+
+    FINDINGS --> MITRE
+    FINDINGS --> SEARCH
+
+    SEARCH -->|Yes| NVD
+    SEARCH -->|No| CONTEXT
+
+    NVD --> CVES
+    CVES --> FOUND
+
+    FOUND -->|Yes| KEV
+    FOUND -->|No| CONTEXT
+
+    KEV --> EXPLOITED
+
+    EXPLOITED -->|Yes| KEVYES
+    EXPLOITED -->|No| KEVNO
+
+    KEVYES --> CONTEXT
+    KEVNO --> CONTEXT
+
+    MITRE --> CONTEXT
+
+    CONTEXT --> AI
+
+    AI -->|Available| ANALYSIS
+    AI -->|Unavailable| FALLBACK
+
+    ANALYSIS --> STORE
+    FALLBACK --> STORE
+
+    STORE --> RESULT
+    RESULT --> REPORT
+```
+
+### Intelligence Pipeline
+
+HealthGuard AI separates deterministic risk calculation from external intelligence enrichment and Generative AI processing.
+
+| Stage | Function | Source |
+|---|---|---|
+| **1. Validation** | Validates submitted device and security-control information | HealthGuard AI |
+| **2. Risk Analysis** | Calculates the deterministic risk score and security findings | Python Risk Engine |
+| **3. ATT&CK Mapping** | Maps relevant exposure conditions to potential adversary techniques | MITRE ATT&CK |
+| **4. CVE Discovery** | Retrieves potentially relevant vulnerability records | NIST NVD |
+| **5. Exploitation Enrichment** | Determines whether candidate CVEs appear in the KEV catalog | CISA KEV |
+| **6. Context Aggregation** | Combines risk findings, ATT&CK mappings, and vulnerability intelligence | HealthGuard AI |
+| **7. AI Analysis** | Generates a structured explanation and remediation recommendations | OpenAI |
+| **8. Persistence** | Stores assessment results and intelligence context | SQLite |
+| **9. Reporting** | Presents results through the dashboard and printable report | Flask / Jinja2 |
+
+> [!NOTE]
+> External intelligence enriches the assessment but does not independently determine the HealthGuard AI risk score. The numerical score remains controlled by the deterministic Python risk engine.
+
+### Decision-Support Model
+
+```mermaid
+flowchart LR
+
+    DEVICE[Device Security Controls]
+
+    ENGINE[Deterministic Risk Engine]
+
+    SCORE[Risk Score]
+
+    INTEL[Threat Intelligence]
+
+    MITRE[ATT&CK Context]
+
+    AI[Generative AI]
+
+    OUTPUT[Security Assessment]
+
+    DEVICE --> ENGINE
+    ENGINE --> SCORE
+
+    SCORE --> OUTPUT
+
+    DEVICE --> INTEL
+    DEVICE --> MITRE
+
+    INTEL --> AI
+    MITRE --> AI
+    SCORE --> AI
+
+    AI --> OUTPUT
+```
+
+**Risk Engine = Decision Logic**  
+**Threat Intelligence = Security Context**  
+**Generative AI = Explanation & Recommendations**
 
 # Installation
 
-Clone the repository
+<details>
+<summary><strong>1. Clone the repository</strong></summary>
 
 ```bash
-git clone https://github.com/MoncadaR/HealthGuard-AI.git
-cd HealthGuard-AI
+git clone https://github.com/MoncadaR/healthguard-ai.git
+cd healthguard-ai
 ```
 
-Create a virtual environment
+</details>
+
+<details>
+<summary><strong>2. Create a virtual environment</strong></summary>
+
+### macOS / Linux
 
 ```bash
 python3 -m venv venv
-```
-
-Activate it
-
-macOS / Linux
-
-```bash
 source venv/bin/activate
 ```
 
-Windows
+### Windows
 
 ```powershell
+python -m venv venv
 venv\Scripts\activate
 ```
 
-Install dependencies
+</details>
+
+<details>
+<summary><strong>3. Install dependencies</strong></summary>
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 ```
 
----
+</details>
 
-# Environment Variables
+<details>
+<summary><strong>4. Configure environment variables</strong></summary>
 
-Create a `.env` file:
+Create:
 
 ```text
-OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-5-mini
-FLASK_SECRET_KEY=your_secret_key
+.env
 ```
 
----
+Add:
 
-# Initialize Database
+```text
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-5-mini
+FLASK_SECRET_KEY=replace_with_your_secret_key
+
+NVD_API_KEY=
+NVD_RESULTS_LIMIT=10
+```
+
+The NVD API key is optional.
+
+Never commit the real `.env` file.
+
+</details>
+
+<details>
+<summary><strong>5. Initialize the database</strong></summary>
 
 ```bash
 flask --app app init-db
 ```
 
----
+Expected:
 
-# Run
+```text
+Database initialized successfully.
+```
+
+</details>
+
+<details>
+<summary><strong>6. Start HealthGuard AI</strong></summary>
 
 ```bash
-flask --app app run
+flask --app app run --debug --port 5001
 ```
 
 Open:
 
+```text
+http://127.0.0.1:5001
 ```
-http://127.0.0.1:5000
-```
+
+</details>
 
 ---
 
-# Running Tests
+# Testing
+
+Run the complete test suite:
 
 ```bash
 python -m pytest -v
+```
+
+Tests cover:
+
+```text
+Risk Engine
+    ├── Score calculation
+    ├── Risk boundaries
+    └── Security findings
+
+Flask Application
+    ├── Routes
+    ├── Input validation
+    └── Database behavior
+
+Threat Intelligence
+    ├── NVD parsing
+    ├── CISA KEV matching
+    └── MITRE ATT&CK mapping
 ```
 
 ---
 
 # Project Structure
 
-```
-HealthGuard-AI/
+```text
+healthguard-ai/
 │
 ├── app.py
 ├── ai_service.py
 ├── database.py
 ├── risk_engine.py
+│
+├── nvd_service.py
+├── kev_service.py
+├── mitre_service.py
+│
 ├── schema.sql
 ├── requirements.txt
 ├── README.md
+├── .gitignore
 │
 ├── static/
 │   └── css/
+│       └── style.css
 │
 ├── templates/
+│   ├── assessment.html
+│   ├── base.html
+│   ├── error.html
+│   ├── history.html
+│   ├── index.html
+│   ├── report.html
+│   └── result.html
 │
-├── tests/
-│
-└── instance/
+└── tests/
+    ├── test_app.py
+    ├── test_risk_engine.py
+    ├── test_nvd_service.py
+    ├── test_kev_service.py
+    └── test_mitre_service.py
+```
+
+---
+
+# Example Analysis
+
+```text
+DEVICE
+Legacy Medical Server
+
+RISK SCORE
+92 / 100
+
+CLASSIFICATION
+CRITICAL
+
+
+VULNERABILITY INTELLIGENCE
+CVE-2021-44228
+CVSS 10.0
+Critical
+
+
+EXPLOITATION INTELLIGENCE
+CISA KEV: YES
+Known Ransomware Use: KNOWN
+
+
+ATT&CK MAPPING
+T1078.001   Default Accounts
+T1078       Valid Accounts
+T1133       External Remote Services
+T1021       Remote Services
+T1190       Exploit Public-Facing Application
 ```
 
 ---
 
 # Current Capabilities
 
-- Medical device cybersecurity assessments
-- Deterministic risk scoring
-- AI-generated executive reports
-- SQLite assessment storage
+<table>
+<tr>
+<td>
+
+**Risk Analysis**
+
+- Medical-device assessments
+- Deterministic scoring
+- Low–Critical classification
+- Security findings
+- Control recommendations
+
+</td>
+<td>
+
+**Threat Intelligence**
+
+- NVD CVE lookup
+- CVSS analysis
+- CISA KEV matching
+- Ransomware-use context
+- CWE information
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+**Threat Modeling**
+
+- MITRE ATT&CK mapping
+- Technique explanations
+- Tactic context
+- Exposure mapping
+
+</td>
+<td>
+
+**Reporting**
+
+- AI-assisted analysis
 - Assessment history
+- SQLite persistence
 - Printable reports
 - Automated testing
-- Secure API key management
+
+</td>
+</tr>
+</table>
 
 ---
 
-# Future Improvements
+# Current Limitations
 
-- CVE integration (NVD)
-- CISA Known Exploited Vulnerabilities feed
-- MITRE ATT&CK mapping
-- Medical Device Inventory
-- User authentication
-- Role-Based Access Control
-- SIEM Integration
-- Docker deployment
-- Cloud deployment (AWS)
-- REST API
-- Dashboard analytics
-- Risk trend visualization
-- PDF report generation
-- Multi-user support
+<details>
+<summary><strong>CVE Matching</strong></summary>
+
+The current NVD integration uses keyword-based searching.
+
+A keyword match does not establish that a specific product, software version, or medical device is vulnerable.
+
+Future versions should implement CPE-based product and version matching.
+
+</details>
+
+<details>
+<summary><strong>CISA KEV</strong></summary>
+
+A CVE not appearing in CISA KEV does not mean exploitation is impossible.
+
+KEV provides prioritization context based on confirmed exploitation evidence.
+
+</details>
+
+<details>
+<summary><strong>MITRE ATT&CK</strong></summary>
+
+ATT&CK mappings are generated from assessment conditions.
+
+They represent potentially relevant adversary techniques and do not indicate observed malicious activity.
+
+</details>
+
+<details>
+<summary><strong>AI Analysis</strong></summary>
+
+Generative AI may produce incomplete or inaccurate explanations despite prompt safeguards.
+
+AI-generated recommendations should be reviewed by qualified personnel.
+
+</details>
 
 ---
 
-# Security Notice
+# Roadmap
 
-HealthGuard AI is an educational decision-support platform.
-
-Do **not** upload:
-
-- Protected Health Information (PHI)
-- Credentials
-- API Keys
-- Internal hospital documentation
-- Confidential patient information
+| Area | Planned Improvement |
+|---|---|
+| Vulnerability Matching | CPE-based CVE matching |
+| Asset Identification | Automated product/version detection |
+| Threat Intelligence | Local caching and enrichment |
+| MITRE | Additional ATT&CK mappings |
+| Frameworks | NIST CSF mapping |
+| Analytics | Risk distribution dashboards |
+| Analytics | Department-level risk trends |
+| Remediation | Vulnerability tracking |
+| Identity | User authentication |
+| Authorization | Role-Based Access Control |
+| Integration | SIEM connectivity |
+| Deployment | Docker |
+| Deployment | Cloud hosting |
+| API | REST API |
+| Reporting | Native PDF generation |
+| Platform | Multi-user support |
 
 ---
 
-# Author
+# Security & Privacy
+
+> [!WARNING]
+> Do not enter real patient, credential, or confidential organizational information into this educational prototype.
+
+Do **not** submit:
+
+```text
+Protected Health Information (PHI)
+Patient names
+Medical record numbers
+Passwords
+Credentials
+API keys
+Internal hospital documentation
+Production network information
+Confidential organizational data
+```
+
+Use fictional, sanitized, or explicitly authorized information only.
+
+---
+
+# Design Principles
+
+```text
+Deterministic scoring over AI scoring
+
+Threat intelligence as context,
+not automatic proof of vulnerability
+
+Known exploitation prioritized separately from severity
+
+ATT&CK mappings as potential techniques,
+not evidence of compromise
+
+AI as decision support,
+not authoritative security judgment
+```
+
+---
+
+# Educational Purpose
+
+HealthGuard AI demonstrates how multiple cybersecurity concepts can be integrated into one application:
+
+```text
+Healthcare Cybersecurity
+          +
+Python / Flask
+          +
+Deterministic Risk Analysis
+          +
+NVD Vulnerability Intelligence
+          +
+CISA Exploitation Intelligence
+          +
+MITRE ATT&CK
+          +
+Generative AI
+          +
+Secure Software Development
+```
+
+---
+
+# Disclaimer
+
+HealthGuard AI is provided for educational, research, and portfolio purposes only.
+
+It does **not** provide:
+
+- Vulnerability scanning
+- Penetration testing
+- HIPAA certification
+- FDA compliance determination
+- Regulatory certification
+- Clinical safety certification
+- Legal advice
+- Medical advice
+
+All findings should be independently validated before being used for operational, security, clinical, or compliance decisions.
+
+---
+
+<div align="center">
+
+## Author
 
 **Ramón Moncada**
 
-Biomedical Engineer | Cybersecurity Graduate Student
-
+Biomedical Engineer | Cybersecurity Graduate Student  
 California State University, Dominguez Hills
 
-GitHub: https://github.com/MoncadaR
+[GitHub](https://github.com/MoncadaR) · [LinkedIn](https://linkedin.com/in/ramón-moncada-0646a21b0)
 
-LinkedIn: https://linkedin.com/in/ramón-moncada-0646a21b0
+<br>
 
----
+### HealthGuard AI
 
-# License
+`Healthcare Cybersecurity · Threat Intelligence · AI-Assisted Risk Analysis`
 
-This project is released for educational and research purposes.
+</div>
