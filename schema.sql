@@ -13,6 +13,7 @@ CREATE TABLE assessments (
     cve_search_term TEXT,
     cve_results TEXT NOT NULL DEFAULT '[]',
     cve_lookup_error TEXT,
+    kev_lookup_error TEXT,
 
     network_connected INTEGER NOT NULL DEFAULT 0,
     internet_access INTEGER NOT NULL DEFAULT 0,

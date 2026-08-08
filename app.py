@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from flask import (
     Flask,
     abort,
@@ -11,11 +12,17 @@ from flask import (
     request,
     url_for,
 )
-from dotenv import load_dotenv
+
 from ai_service import generate_ai_analysis
 from database import get_db, init_app, init_db
+from kev_service import (
+    KEVServiceError,
+    fetch_kev_catalog,
+    match_cves_to_kev,
+)
 from nvd_service import NVDServiceError, search_cves
 from risk_engine import calculate_risk
+
 
 load_dotenv()
 
@@ -63,14 +70,12 @@ def checkbox_value(field_name: str) -> int:
 
     return 1 if request.form.get(field_name) == "on" else 0
 
+
 def clean_text(
     field_name: str,
     maximum_length: int = 200,
 ) -> str:
-    """
-    Read a text field, remove extra spaces,
-    and limit its maximum length.
-    """
+    """Read, trim, and length-limit a text form value."""
 
     value = request.form.get(
         field_name,
@@ -78,6 +83,7 @@ def clean_text(
     ).strip()
 
     return value[:maximum_length]
+
 
 def serialize_list(items: list[str]) -> str:
     """Convert a Python list into JSON text for SQLite."""
@@ -102,7 +108,10 @@ def deserialize_list(value: str | None) -> list[str]:
 
     return []
 
-def deserialize_json_list(value: str | None) -> list[dict]:
+
+def deserialize_json_list(
+    value: str | None,
+) -> list[dict]:
     """Convert stored JSON text into a list of dictionaries."""
 
     if not value:
@@ -123,6 +132,27 @@ def deserialize_json_list(value: str | None) -> list[dict]:
 
     return []
 
+
+def get_assessment_or_404(
+    assessment_id: int,
+):
+    """Retrieve one assessment or return a 404 page."""
+
+    assessment_record = get_db().execute(
+        """
+        SELECT *
+        FROM assessments
+        WHERE id = ?
+        """,
+        (assessment_id,),
+    ).fetchone()
+
+    if assessment_record is None:
+        abort(404)
+
+    return assessment_record
+
+
 @app.route("/")
 def index():
     """Display dashboard statistics and recent assessments."""
@@ -133,6 +163,7 @@ def index():
         """
         SELECT
             COUNT(*) AS total,
+
             SUM(
                 CASE
                     WHEN risk_level = 'Critical'
@@ -140,6 +171,7 @@ def index():
                     ELSE 0
                 END
             ) AS critical,
+
             SUM(
                 CASE
                     WHEN risk_level = 'High'
@@ -147,7 +179,12 @@ def index():
                     ELSE 0
                 END
             ) AS high,
-            ROUND(AVG(risk_score), 1) AS average_score
+
+            ROUND(
+                AVG(risk_score),
+                1
+            ) AS average_score
+
         FROM assessments
         """
     ).fetchone()
@@ -161,8 +198,11 @@ def index():
             risk_score,
             risk_level,
             created_at
+
         FROM assessments
+
         ORDER BY created_at DESC
+
         LIMIT 5
         """
     ).fetchall()
@@ -174,50 +214,50 @@ def index():
     )
 
 
-@app.route("/assessment", methods=["GET", "POST"])
+@app.route(
+    "/assessment",
+    methods=["GET", "POST"],
+)
 def assessment():
     """Display and process the device assessment form."""
 
     if request.method == "GET":
-        return render_template("assessment.html")
+        return render_template(
+            "assessment.html"
+        )
 
     device_data = {
-        "device_name": request.form.get(
-            "device_name",
-            "",
-        ).strip(),
-        "manufacturer": request.form.get(
-            "manufacturer",
-            "",
-        ).strip(),
-        "model": request.form.get(
-            "model",
-            "",
-        ).strip(),
-        "device_type": request.form.get(
-            "device_type",
-            "",
-        ).strip(),
-        "department": request.form.get(
-            "department",
-            "",
-        ).strip(),
-        "operating_system": request.form.get(
-            "operating_system",
-            "",
-        ).strip(),
-        "support_status": request.form.get(
-            "support_status",
-            "unknown",
-        ).strip(),
-            "cve_search_term": clean_text(
-        "cve_search_term",
-        maximum_length=150,
-),
+        "device_name": clean_text(
+            "device_name"
+        ),
+        "manufacturer": clean_text(
+            "manufacturer"
+        ),
+        "model": clean_text(
+            "model"
+        ),
+        "device_type": clean_text(
+            "device_type"
+        ),
+        "department": clean_text(
+            "department"
+        ),
+        "operating_system": clean_text(
+            "operating_system"
+        ),
+        "support_status": clean_text(
+            "support_status"
+        ),
+        "cve_search_term": clean_text(
+            "cve_search_term",
+            maximum_length=150,
+        ),
     }
 
     for field in BOOLEAN_FIELDS:
-        device_data[field] = checkbox_value(field)
+        device_data[field] = checkbox_value(
+            field
+        )
 
     if not device_data["device_name"]:
         return render_template(
@@ -240,20 +280,29 @@ def assessment():
     }:
         return render_template(
             "assessment.html",
-            error="A valid software support status is required.",
+            error=(
+                "A valid software support status "
+                "is required."
+            ),
             form_data=request.form,
         )
 
-    result = calculate_risk(device_data)
+    result = calculate_risk(
+        device_data
+    )
 
     cve_records = []
     cve_results = []
+
     cve_lookup_error = None
+    kev_lookup_error = None
 
     if device_data["cve_search_term"]:
         try:
             cve_records = search_cves(
-                device_data["cve_search_term"]
+                device_data[
+                    "cve_search_term"
+                ]
             )
 
             cve_results = [
@@ -267,16 +316,69 @@ def assessment():
                 exception,
             )
 
-            cve_lookup_error = str(exception)
+            cve_lookup_error = str(
+                exception
+            )
+
+    if cve_results:
+        try:
+            kev_catalog = fetch_kev_catalog()
+
+            cve_ids = [
+                item["cve_id"]
+                for item in cve_results
+                if item.get("cve_id")
+            ]
+
+            kev_matches = match_cves_to_kev(
+                cve_ids,
+                kev_catalog,
+            )
+
+            for cve in cve_results:
+                cve_id = cve.get(
+                    "cve_id",
+                    "",
+                ).strip().upper()
+
+                kev_record = kev_matches.get(
+                    cve_id
+                )
+
+                if kev_record:
+                    cve["known_exploited"] = True
+                    cve["kev"] = kev_record.to_dict()
+
+                else:
+                    cve["known_exploited"] = False
+                    cve["kev"] = None
+
+        except KEVServiceError as exception:
+            app.logger.warning(
+                "CISA KEV lookup failed: %s",
+                exception,
+            )
+
+            kev_lookup_error = str(
+                exception
+            )
+
+            for cve in cve_results:
+                cve["known_exploited"] = None
+                cve["kev"] = None
 
     ai_analysis = None
     ai_error = None
 
     try:
-        if app.config.get("TESTING"):
+        if app.config.get(
+            "TESTING"
+        ):
             ai_analysis = (
-                "AI analysis disabled during automated application testing."
+                "AI analysis disabled during "
+                "automated application testing."
             )
+
         else:
             ai_analysis = generate_ai_analysis(
                 device_data,
@@ -285,10 +387,13 @@ def assessment():
 
     except Exception as exception:
         app.logger.exception(
-            "The AI analysis could not be generated."
+            "The AI analysis could not "
+            "be generated."
         )
 
-        ai_error = str(exception)
+        ai_error = str(
+            exception
+        )
 
     db = get_db()
 
@@ -302,9 +407,11 @@ def assessment():
             department,
             operating_system,
             support_status,
+
             cve_search_term,
             cve_results,
             cve_lookup_error,
+            kev_lookup_error,
 
             network_connected,
             internet_access,
@@ -335,8 +442,10 @@ def assessment():
             positive_controls,
             ai_analysis
         )
+
         VALUES (
-            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?, ?, ?, ?,
+            ?, ?, ?, ?,
             ?, ?, ?,
             ?, ?, ?,
             ?, ?, ?,
@@ -354,9 +463,11 @@ def assessment():
             device_data["department"],
             device_data["operating_system"],
             device_data["support_status"],
+
             device_data["cve_search_term"],
             json.dumps(cve_results),
             cve_lookup_error,
+            kev_lookup_error,
 
             device_data["network_connected"],
             device_data["internet_access"],
@@ -382,9 +493,15 @@ def assessment():
             result.score,
             result.level,
 
-            serialize_list(result.findings),
-            serialize_list(result.recommendations),
-            serialize_list(result.positive_controls),
+            serialize_list(
+                result.findings
+            ),
+            serialize_list(
+                result.recommendations
+            ),
+            serialize_list(
+                result.positive_controls
+            ),
             ai_analysis,
         ),
     )
@@ -395,8 +512,9 @@ def assessment():
 
     if ai_error:
         flash(
-            "The rule-based assessment was completed, but the "
-            "AI analysis was unavailable.",
+            "The rule-based assessment was "
+            "completed, but the AI analysis "
+            "was unavailable.",
             "warning",
         )
 
@@ -408,9 +526,12 @@ def assessment():
     )
 
 
-
-@app.route("/result/<int:assessment_id>")
-def view_result(assessment_id: int):
+@app.route(
+    "/result/<int:assessment_id>"
+)
+def view_result(
+    assessment_id: int,
+):
     """Display one saved assessment."""
 
     assessment_record = get_assessment_or_404(
@@ -450,7 +571,9 @@ def history():
             risk_score,
             risk_level,
             created_at
+
         FROM assessments
+
         ORDER BY created_at DESC
         """
     ).fetchall()
@@ -461,8 +584,12 @@ def history():
     )
 
 
-@app.route("/report/<int:assessment_id>")
-def report(assessment_id: int):
+@app.route(
+    "/report/<int:assessment_id>"
+)
+def report(
+    assessment_id: int,
+):
     """Display a printable assessment report."""
 
     assessment_record = get_assessment_or_404(
@@ -482,27 +609,39 @@ def report(assessment_id: int):
             assessment_record["positive_controls"]
         ),
         cve_results=deserialize_json_list(
-         assessment_record["cve_results"]
+            assessment_record["cve_results"]
         ),
     )
 
 
-def get_assessment_or_404(assessment_id: int):
-    """Retrieve one assessment or return a 404 page."""
+@app.errorhandler(404)
+def not_found(error):
+    """Display a friendly 404 page."""
 
-    assessment_record = get_db().execute(
-        """
-        SELECT *
-        FROM assessments
-        WHERE id = ?
-        """,
-        (assessment_id,),
-    ).fetchone()
+    return render_template(
+        "error.html",
+        title="Assessment Not Found",
+        message=(
+            "The requested assessment "
+            "could not be found."
+        ),
+    ), 404
 
-    if assessment_record is None:
-        abort(404)
 
-    return assessment_record
+@app.errorhandler(500)
+def internal_error(error):
+    """Display a friendly application error page."""
+
+    return render_template(
+        "error.html",
+        title="Application Error",
+        message=(
+            "The application encountered an "
+            "unexpected error. Review the "
+            "Terminal logs for additional "
+            "information."
+        ),
+    ), 500
 
 
 @app.cli.command("init-db")
@@ -510,8 +649,14 @@ def init_db_command():
     """Create or reset the SQLite database."""
 
     init_db()
-    print("Database initialized successfully.")
+
+    print(
+        "Database initialized successfully."
+    )
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(
+        debug=True,
+        port=5001,
+    )

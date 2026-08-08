@@ -239,6 +239,8 @@
             <th>CVSS</th>
             <th>Severity</th>
             <th>Description</th>
+            <th>Known Exploited</th>
+            <th>Required Action</th>
         </tr>
         </thead>
 
@@ -251,6 +253,23 @@
             </td>
             <td>{{ cve["severity"] }}</td>
             <td>{{ cve["description"] }}</td>
+            <td>
+                {% if cve["known_exploited"] is sameas true %}
+                    Yes
+                {% elif cve["known_exploited"] is sameas false %}
+                    No
+                {% else %}
+                    Unknown
+                {% endif %}
+            </td>
+
+            <td>
+                {% if cve["kev"] %}
+                    {{ cve["kev"]["required_action"] }}
+                {% else %}
+                    Not applicable
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
         </tbody>

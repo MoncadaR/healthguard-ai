@@ -139,19 +139,26 @@ Assessment Results | HealthGuard AI
 
         {% if assessment["cve_lookup_error"] %}
         <div class="alert alert-secondary">
-            NVD lookup unavailable:
-            {{ assessment["cve_lookup_error"] }}
+        NVD lookup unavailable:
+        {{ assessment["cve_lookup_error"] }}
         </div>
-
+        {% if assessment["kev_lookup_error"] %}
+        <div class="alert alert-secondary">
+            CISA KEV lookup unavailable:
+            {{ assessment["kev_lookup_error"] }}
+        </div>
+        {% endif %}
         {% elif cve_results %}
         <div class="table-responsive">
             <table class="table table-hover align-middle">
                 <thead>
                 <tr>
                     <th>CVE</th>
-                    <th>CVSS</th>
-                    <th>Severity</th>
-                    <th>Description</th>
+                        <th>CVSS</th>
+                        <th>Severity</th>
+                        <th>Known Exploited</th>
+                        <th>Ransomware Use</th>
+                        <th>Description</th>
                     <th></th>
                 </tr>
                 </thead>
@@ -170,6 +177,29 @@ Assessment Results | HealthGuard AI
                     <td>
                         {{ cve["severity"] }}
                     </td>
+                    <td>
+                    {% if cve["known_exploited"] is sameas true %}
+                        <span class="badge bg-danger">
+                            Yes
+                        </span>
+                    {% elif cve["known_exploited"] is sameas false %}
+                        <span class="badge bg-secondary">
+                            No
+                        </span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">
+                            Unknown
+                        </span>
+                    {% endif %}
+                </td>
+
+                <td>
+                    {% if cve["kev"] %}
+                        {{ cve["kev"]["known_ransomware_use"] }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </td>
 
                     <td>
                         {{ cve["description"][:240] }}
@@ -190,6 +220,59 @@ Assessment Results | HealthGuard AI
                         </a>
                     </td>
                 </tr>
+                {% if cve["kev"] %}
+                <tr class="table-danger">
+                    <td colspan="7">
+                        <strong>
+                            CISA KEV Match
+                        </strong>
+
+                        <div class="mt-2">
+                            <strong>Vendor:</strong>
+                            {{ cve["kev"]["vendor_project"] }}
+                        </div>
+
+                        <div>
+                            <strong>Product:</strong>
+                            {{ cve["kev"]["product"] }}
+                        </div>
+
+                        <div>
+                            <strong>Vulnerability:</strong>
+                            {{ cve["kev"]["vulnerability_name"] }}
+                        </div>
+
+                        <div>
+                            <strong>Date Added:</strong>
+                            {{ cve["kev"]["date_added"] }}
+                        </div>
+
+                        <div>
+                            <strong>Required Action:</strong>
+                            {{ cve["kev"]["required_action"] }}
+                        </div>
+
+                        <div>
+                            <strong>Due Date:</strong>
+                            {{ cve["kev"]["due_date"] }}
+                        </div>
+
+                        <div>
+                            <strong>Known Ransomware Use:</strong>
+                            {{ cve["kev"]["known_ransomware_use"] }}
+                        </div>
+
+                        {% if cve["kev"]["cwes"] %}
+                        <div>
+                            <strong>CWEs:</strong>
+                            {{ cve["kev"]["cwes"]|join(", ") }}
+                        </div>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endif %}
+
+
                 {% endfor %}
                 </tbody>
             </table>
