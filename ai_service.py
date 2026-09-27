@@ -1,11 +1,12 @@
 import json
 import os
-from typing import Any
+from typing import Any, TYPE_CHECKING
 
-from openai import OpenAI
+if TYPE_CHECKING:
+    from openai import OpenAI
 
 
-def get_openai_client() -> OpenAI:
+def get_openai_client() -> "OpenAI":
     """Create an OpenAI client using the environment API key."""
 
     api_key = os.getenv("OPENAI_API_KEY")
@@ -14,6 +15,8 @@ def get_openai_client() -> OpenAI:
         raise RuntimeError(
             "OPENAI_API_KEY is missing from the .env file."
         )
+
+    from openai import OpenAI
 
     return OpenAI(api_key=api_key)
 
